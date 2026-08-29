@@ -11,7 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
-class HealthComponent;
+class UHealthComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -97,7 +97,7 @@ public:
 private:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	float<TObjectPtr>* Health;
+	TObjectPtr<UHealthComponent> HealthComponent;
 
 };
 
