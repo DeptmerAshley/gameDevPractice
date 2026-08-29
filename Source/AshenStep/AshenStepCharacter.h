@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
+class HealthComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -92,5 +93,11 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	float<TObjectPtr>* Health;
+
 };
 
