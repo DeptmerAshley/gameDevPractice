@@ -96,8 +96,7 @@ public:
 
 private:
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
 };
-
