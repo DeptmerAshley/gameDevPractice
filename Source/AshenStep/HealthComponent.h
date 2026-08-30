@@ -38,7 +38,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float Heal(float Amount);
 
-	// Properties
+	// Properties for applying damage, death, and changes to health
 	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
 	FOnHealthChanged OnHealthChanged;
 
