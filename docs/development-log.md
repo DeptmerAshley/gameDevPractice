@@ -2,15 +2,13 @@
 
 Use one entry per development session. Keep entries short and evidence-based.
 
-## YYYY-MM-DD — Session title
+## 2026-8-29 — Add Health Component
 
 ### Goal
-
-Describe the concrete outcome planned for this session.
+Create a Health Component Object that is attached to a player. This will allow for editable fields in unreal that allow the user to manipulate max and current health.
 
 ### Result
-
-Describe what was completed.
+New Actor component UHealthComponent was created and successfully added to a player component. It is a sub object that appears under components in the player blueprint.
 
 ### Verification
 
@@ -20,8 +18,8 @@ Describe what was completed.
 
 ### Obstacles and decisions
 
-Record problems encountered, important tradeoffs, and why a solution was chosen.
+Learning to code in Unreal but thats it.
 
 ### Next action
 
-State the first concrete action for the next session.
+Create a health bar, damage, gain health, etc.
