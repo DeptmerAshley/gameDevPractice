@@ -88,7 +88,10 @@ float UHealthComponent::Heal(float Amount)
 
 	const float AppliedHealing = CurrentHealth - PreviousHealth;
 
-	if (AppliedHealing > 0) { OnHealthChanged.Broadcast(CurrentHealth, MaxHealth); }
+	if (AppliedHealing > 0) 
+	{ 
+		OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);   
+	}
 
 	return AppliedHealing;
 }
