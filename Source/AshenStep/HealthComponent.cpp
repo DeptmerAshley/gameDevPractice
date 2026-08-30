@@ -73,7 +73,7 @@ float UHealthComponent::ApplyDamage(float Amount)
 
 float UHealthComponent::Heal(float Amount)
 {
-	if (Amount >= MaxHealth || !IsAlive())
+	if (Amount <= 0.0f || !IsAlive())
 	{
 		return 0.0f;
 	}
@@ -88,7 +88,7 @@ float UHealthComponent::Heal(float Amount)
 
 	const float AppliedHealing = CurrentHealth - PreviousHealth;
 
-	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+	if (AppliedHealing > 0) { OnHealthChanged.Broadcast(CurrentHealth, MaxHealth); }
 
 	return AppliedHealing;
 }
