@@ -42,7 +42,26 @@ bool UHealthComponent::IsAlive() const
 
 float UHealthComponent::ApplyDamage(float Amount)
 {
-	return CurrentHealth - Amount;
+	if (Amount <= 0.0f || !IsAlive())
+	{
+		return 0.0f;
+	}
+
+	const float PreviousHealth = CurrentHealth;
+
+	CurrentHealth = FMath::Clamp(
+		CurrentHealth - Amount,
+		0.0f,
+		MaxHealth
+	);
+
+	const float AppliedDamage = PreviousHealth - CurrentHealth;
+
+	const bool bJustDied =
+		PreviousHealth > 0.0f &&
+		CurrentHealth <= 0.0f;
+
+	return AppliedDamage;
 }
 
 float UHealthComponent::Heal(float Amount)
