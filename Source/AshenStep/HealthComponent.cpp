@@ -61,6 +61,13 @@ float UHealthComponent::ApplyDamage(float Amount)
 		PreviousHealth > 0.0f &&
 		CurrentHealth <= 0.0f;
 
+	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+
+	if (bJustDied == true)
+	{
+		OnDeath.Broadcast();
+	}
+
 	return AppliedDamage;
 }
 
@@ -68,4 +75,3 @@ float UHealthComponent::Heal(float Amount)
 {
 	return CurrentHealth + Amount;
 }
-

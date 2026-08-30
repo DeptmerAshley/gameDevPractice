@@ -6,6 +6,13 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnHealthChanged,
+	float, CurrentHealth,
+	float, MaxHealth
+);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 
 UCLASS( ClassGroup=(Gameplay), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UHealthComponent : public UActorComponent
@@ -30,6 +37,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float Heal(float Amount);
+
+	// Properties
+	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
+	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
+	FOnDeath OnDeath;
 
 protected:
 	// Called when the game starts
