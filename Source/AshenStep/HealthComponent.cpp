@@ -39,3 +39,14 @@ bool UHealthComponent::IsAlive() const
 {
 	return CurrentHealth > 0.0f;
 }
+
+float UHealthComponent::ApplyDamage(float Amount)
+{
+	return CurrentHealth - Amount;
+}
+
+float UHealthComponent::Heal(float Amount)
+{
+	return CurrentHealth + Amount;
+}
+

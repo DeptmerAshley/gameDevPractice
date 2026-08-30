@@ -25,6 +25,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsAlive() const;
 
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float ApplyDamage(float Amount);
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float Heal(float Amount);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
