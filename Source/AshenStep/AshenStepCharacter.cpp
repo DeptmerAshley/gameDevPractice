@@ -134,3 +134,8 @@ void AAshenStepCharacter::DoJumpEnd()
 	// signal the character to stop jumping
 	StopJumping();
 }
+
+UHealthComponent* AAshenStepCharacter::GetHealthComponent() const
+{
+	return this->HealthComponent;
+}
