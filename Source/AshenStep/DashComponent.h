@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Dash/DashAbilityModel.h"
 #include "DashComponent.generated.h"
 
+FDashAbilityModel DashAbilityModel;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UDashComponent : public UActorComponent

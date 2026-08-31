@@ -18,9 +18,6 @@ UDashComponent::UDashComponent()
 void UDashComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
 
@@ -29,6 +26,6 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	DashAbilityModel.AdvanceTime(DeltaTime);
 }
 
