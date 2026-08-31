@@ -159,4 +159,32 @@ bool FDashInterruptionAndAirRulesTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FDashLargeFrameTest,
+	"AshenStep.Dash.LargeFrame",
+	AshenStep::DashTests::TestFlags)
+
+	bool FDashLargeFrameTest::RunTest(const FString& Parameters)
+{
+	FDashConfig Config;
+	Config.Duration = 0.2f;
+	Config.Cooldown = 1.0f;
+
+	FDashAbilityModel Dash(Config);
+	Dash.TryStartDash(
+		FVector2D(0.0f, 1.0f),
+		FVector::ForwardVector,
+		FVector::RightVector,
+		false);
+
+	Dash.AdvanceTime(1.2f);
+
+	TestEqual(
+		TEXT("A frame spanning dash and cooldown returns to Ready"),
+		Dash.GetState(),
+		EDashState::Ready);
+
+	return true;
+}
+
 #endif

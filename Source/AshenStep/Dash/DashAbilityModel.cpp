@@ -42,35 +42,37 @@ void FDashAbilityModel::AdvanceTime(float DeltaSeconds)
 		return;
 	}
 
-	switch (State)
+	StateElapsedTime += DeltaSeconds;
+	bool bProcessedTransition = true;
+
+	while (bProcessedTransition)
 	{
+		bProcessedTransition = false;
+
+		switch (State)
+		{
 		case EDashState::Ready:
+			StateElapsedTime = 0.0f;
 			break;
 
 		case EDashState::Dashing:
-			StateElapsedTime += DeltaSeconds;
-			if (StateElapsedTime >= Config.Duration) 
+			if (StateElapsedTime >= Config.Duration)
 			{
+				StateElapsedTime -= Config.Duration;
 				State = EDashState::Cooldown;
-				if (StateElapsedTime > Config.Duration)
-				{
-					StateElapsedTime -= Config.Duration;
-				}
-				else
-				{
-					StateElapsedTime = 0.0f;
-				}
+				bProcessedTransition = true;
 			}
 			break;
 
 		case EDashState::Cooldown:
-			StateElapsedTime += DeltaSeconds;
 			if (StateElapsedTime >= Config.Cooldown)
 			{
-				State = EDashState::Ready;
 				StateElapsedTime = 0.0f;
+				State = EDashState::Ready;
+				bProcessedTransition = true;
 			}
 			break;
+		}
 	}
 }
 
