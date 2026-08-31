@@ -7,6 +7,10 @@ FDashAbilityModel::FDashAbilityModel(const FDashConfig& InConfig)
 
 bool FDashAbilityModel::CanDash(bool bIsAirborne) const
 {
+	if ((!bIsAirborne || Config.bAllowAirDash) && (State == EDashState::Ready))
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -16,7 +20,19 @@ bool FDashAbilityModel::TryStartDash(
 	const FVector& RightDirection,
 	bool bIsAirborne)
 {
-	return false;
+	if (!CanDash(bIsAirborne))
+	{
+		return false;
+	}
+	DashDirection = ResolveDashDirection(
+		MovementInput,
+		ForwardDirection,
+		RightDirection);
+
+
+	State = EDashState::Dashing;
+	StateElapsedTime = 0.0f;
+	return true;
 }
 
 void FDashAbilityModel::AdvanceTime(float DeltaSeconds)
@@ -32,5 +48,14 @@ FVector FDashAbilityModel::ResolveDashDirection(
 	const FVector& ForwardDirection,
 	const FVector& RightDirection)
 {
-	return FVector::ZeroVector;
+	if (MovementInput.IsNearlyZero())
+	{
+		return ForwardDirection.GetSafeNormal();
+	}
+
+	const FVector DesiredDirection =
+		(ForwardDirection * MovementInput.Y) +
+		(RightDirection * MovementInput.X);
+
+	return DesiredDirection.GetSafeNormal();
 }
