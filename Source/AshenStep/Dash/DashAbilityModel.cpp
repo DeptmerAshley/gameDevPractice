@@ -69,6 +69,13 @@ void FDashAbilityModel::AdvanceTime(float DeltaSeconds)
 
 void FDashAbilityModel::EndDashEarly()
 {
+	if (State != EDashState::Dashing)
+	{
+		return;
+	}
+
+	State = EDashState::Cooldown;
+	StateElapsedTime = 0.0f;
 }
 
 FVector FDashAbilityModel::ResolveDashDirection(
