@@ -37,6 +37,34 @@ bool FDashAbilityModel::TryStartDash(
 
 void FDashAbilityModel::AdvanceTime(float DeltaSeconds)
 {
+	if (DeltaSeconds <= 0.0f)
+	{
+		return;
+	}
+
+	switch (State)
+	{
+		case EDashState::Ready:
+			break;
+
+		case EDashState::Dashing:
+			StateElapsedTime += DeltaSeconds;
+			if (StateElapsedTime >= Config.Duration) 
+			{
+				State = EDashState::Cooldown;
+				StateElapsedTime = 0.f;
+			}
+			break;
+
+		case EDashState::Cooldown:
+			StateElapsedTime += DeltaSeconds;
+			if (StateElapsedTime >= Config.Cooldown)
+			{
+				State = EDashState::Ready;
+				StateElapsedTime = 0.0f;
+			}
+			break;
+	}
 }
 
 void FDashAbilityModel::EndDashEarly()
