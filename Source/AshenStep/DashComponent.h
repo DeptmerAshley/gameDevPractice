@@ -7,7 +7,6 @@
 #include "Dash/DashAbilityModel.h"
 #include "DashComponent.generated.h"
 
-FDashAbilityModel DashAbilityModel;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UDashComponent : public UActorComponent
@@ -22,9 +21,11 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+private:
+	FDashAbilityModel DashAbilityModel;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
 };
