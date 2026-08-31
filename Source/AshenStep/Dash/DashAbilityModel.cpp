@@ -52,7 +52,14 @@ void FDashAbilityModel::AdvanceTime(float DeltaSeconds)
 			if (StateElapsedTime >= Config.Duration) 
 			{
 				State = EDashState::Cooldown;
-				StateElapsedTime = 0.f;
+				if (StateElapsedTime > Config.Duration)
+				{
+					StateElapsedTime -= Config.Duration;
+				}
+				else
+				{
+					StateElapsedTime = 0.0f;
+				}
 			}
 			break;
 

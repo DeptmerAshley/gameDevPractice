@@ -13,6 +13,7 @@ struct FDashConfig
 {
 	float Duration = 0.2f;
 	float Cooldown = 1.0f;
+	float Distance;
 	bool bAllowAirDash = false;
 };
 
