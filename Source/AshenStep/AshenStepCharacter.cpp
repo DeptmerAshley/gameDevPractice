@@ -72,7 +72,9 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAshenStepCharacter::Look);
 
 		// Dash 
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AAshenStepCharacter::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AAshenStepCharacter::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &AAshenStepCharacter::StopMoveInput);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Canceled, this, &AAshenStepCharacter::StopMoveInput);
 	}
 	else
 	{
