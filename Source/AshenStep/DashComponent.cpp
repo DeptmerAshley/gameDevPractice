@@ -20,6 +20,14 @@ UDashComponent::UDashComponent()
 void UDashComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FDashConfig DashConfig;
+	DashConfig.Distance = DashDistance;
+	DashConfig.Duration = DashDuration;
+	DashConfig.Cooldown = DashCooldown;
+	DashConfig.bAllowAirDash = bAllowAirDash;
+
+	DashAbilityModel = FDashAbilityModel(DashConfig);
 	
 	//Load an Actor cast as a character into the cached character slot
 	CachedCharacter = Cast<ACharacter>(GetOwner());
@@ -96,9 +104,25 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	return DashAbilityModel.TryStartDash(
-		MovementInput,
-		ForwardDirection,
-		RightDirection,
-		bIsAirborne);
+	const bool bDashStarted = DashAbilityModel.TryStartDash(MovementInput, ForwardDirection, RightDirection, bIsAirborne);
+	if (!bDashStarted)
+	{
+		return false;
+	}
+
+	FVector CurrentVelocity = CachedMovementComponent->Velocity;
+	FVector HorizontalVelocity = CurrentVelocity;
+	HorizontalVelocity.Z = 0.0f;
+	const float BaseDashSpeed = DashAbilityModel.GetDashSpeed();
+	const FVector& DashDirection = DashAbilityModel.GetDashDirection();
+
+	const float ForwardMomentum = FVector::DotProduct(HorizontalVelocity, DashDirection);
+	const float UnclampedMomentumBonus = FMath::Max(ForwardMomentum, 0.0f) * MomentumContribution;
+
+	const float MomentumBonus = FMath::Clamp(UnclampedMomentumBonus, 0.0f, MaxMomentumBonus);
+
+	ActiveDashSpeed = BaseDashSpeed + MomentumBonus;
+	CachedMovementComponent->StopMovementImmediately();
+
+	return true;
 }

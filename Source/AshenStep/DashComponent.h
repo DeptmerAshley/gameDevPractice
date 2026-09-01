@@ -33,6 +33,26 @@ private:
 
 	FDashAbilityModel DashAbilityModel;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "1.0"))
+	float DashDistance = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.01"))
+	float DashDuration = 0.2f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+	float DashCooldown = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true"))
+	bool bAllowAirDash = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+	float MomentumContribution = 0.25f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+	float MaxMomentumBonus = 200f;
+
+	float ActiveDashSpeed = 0.0f;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
