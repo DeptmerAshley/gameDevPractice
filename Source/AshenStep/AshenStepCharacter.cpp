@@ -70,6 +70,9 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAshenStepCharacter::Look);
+
+		// Dash 
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AAshenStepCharacter::Dash);
 	}
 	else
 	{
@@ -88,6 +91,28 @@ void AAshenStepCharacter::Move(const FInputActionValue& Value)
 	DoMove(MovementVector.X, MovementVector.Y);
 }
 
+void AAshenStepCharacter::StopMoveInput()
+{
+	CurrentMovementInput = FVector2D::ZeroVector;
+}
+
+void AAshenStepCharacter::Dash()
+{
+	if (!DashComponent)
+	{
+		return;
+	}
+
+	const bool bDashStarted = DashComponent->RequestDash(CurrentMovementInput);
+
+	UE_LOG(
+		LogAshenStep,
+		Log,
+		TEXT("Dash request: %s"),
+		bDashStarted ? TEXT("accepted") : TEXT("rejected")
+	);
+}
+
 void AAshenStepCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -95,11 +120,6 @@ void AAshenStepCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
-}
-
-void AAshenStepCharacter::StopMoveInput()
-{
-	CurrentMovementInput = FVector2D::ZeroVector;
 }
 
 void AAshenStepCharacter::DoMove(float Right, float Forward)
