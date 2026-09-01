@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DashAction;
+
 public:
 
 	/** Constructor */
@@ -68,6 +71,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	FVector2D CurrentMovementInput = FVector2D::ZeroVector;
+	void StopMoveInput();
 
 public:
 

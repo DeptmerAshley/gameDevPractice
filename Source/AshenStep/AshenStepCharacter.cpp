@@ -80,7 +80,9 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void AAshenStepCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	CurrentMovementInput = MovementVector;
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
@@ -93,6 +95,11 @@ void AAshenStepCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AAshenStepCharacter::StopMoveInput()
+{
+	CurrentMovementInput = FVector2D::ZeroVector;
 }
 
 void AAshenStepCharacter::DoMove(float Right, float Forward)
