@@ -100,12 +100,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDashComponent> DashComponent;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	UHealthComponent* GetHealthComponent() const;
+
+	UFUNCTION(BlueprintPure, Category = "Movement")
 	UDashComponent* GetDashComponent() const;
 
 };

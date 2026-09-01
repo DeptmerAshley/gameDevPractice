@@ -2,8 +2,6 @@
 
 
 #include "DashComponent.h"
-#include "GameFramework/Character.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UDashComponent::UDashComponent()
@@ -20,22 +18,22 @@ UDashComponent::UDashComponent()
 void UDashComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	//Load an Actor cast as a character into the cached character slot
+	CachedCharacter = Cast<ACharacter>(GetOwner());
 
-	AActor* Actor = GetOwner();
-	if (!Actor)
+	if (!CachedCharacter)
 	{
+		SetComponentTickEnabled(false);
 		return;
 	}
+	
+	//Load the movement component from the cached character into the cached movement component slot
+	CachedMovementComponent = CachedCharacter->GetCharacterMovement();
 
-	ACharacter* Character = Cast<ACharacter>(Actor);
-	if (!Character)
+	if (!CachedMovementComponent)
 	{
-		return;
-	}
-
-	UCharacterMovementComponent* MovementComponent = Character->GetCharacterMovement();
-	if (!MovementComponent)
-	{
+		SetComponentTickEnabled(false);
 		return;
 	}
 }
@@ -46,32 +44,31 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!IsValid(CachedCharacter) || !IsValid(CachedMovementComponent))
+	{
+		return;
+	}
+
 	DashAbilityModel.AdvanceTime(DeltaTime);
+
+	if (DashAbilityModel.GetState() == EDashState::Dashing)
+	{
+		//Determine frame displacement
+		// Attempt collision-safe movement
+	}
+	// Advance the models time/state
 }
 
 bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 {
-	AActor* Actor = GetOwner();
-	if (!Actor)
+	if (!IsValid(CachedCharacter) || !IsValid(CachedMovementComponent))
 	{
 		return false;
 	}
 
-	ACharacter* Character = Cast<ACharacter>(Actor);
-	if (!Character)
-	{
-		return false;
-	}
-
-	UCharacterMovementComponent* MovementComponent = Character->GetCharacterMovement();
-	if (!MovementComponent)
-	{
-		return false;
-	}
-
-	const bool bIsAirborne = MovementComponent->IsFalling();
+	const bool bIsAirborne = CachedMovementComponent->IsFalling();
 	
-	const FRotator ControlRotation = Character->GetControlRotation();
+	const FRotator ControlRotation = CachedCharacter->GetControlRotation();
 	const FRotator YawRotation(0.0f, ControlRotation.Yaw, 0.0f);
 
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);

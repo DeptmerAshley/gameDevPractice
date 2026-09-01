@@ -5,8 +5,12 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Dash/DashAbilityModel.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "DashComponent.generated.h"
 
+class ACharacter;
+class UCharacterMovementComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UDashComponent : public UActorComponent
@@ -22,12 +26,19 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	// Create room to cache a character with Transient UPROPERTIES
+	UPROPERTY(Transient)
+	TObjectPtr<ACharacter> CachedCharacter;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCharacterMovementComponent> CachedMovementComponent;
+
 	FDashAbilityModel DashAbilityModel;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	bool RequestDash(const FVector2d& MovementInput);
+	bool RequestDash(const FVector2D& MovementInput);
 
 };
