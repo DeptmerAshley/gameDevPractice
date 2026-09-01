@@ -2,6 +2,8 @@
 
 
 #include "DashComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UDashComponent::UDashComponent()
@@ -18,6 +20,24 @@ UDashComponent::UDashComponent()
 void UDashComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AActor* Actor = GetOwner();
+	if (!Actor)
+	{
+		return;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(Actor);
+	if (!Character)
+	{
+		return;
+	}
+
+	UCharacterMovementComponent* MovementComponent = Character->GetCharacterMovement();
+	if (!MovementComponent)
+	{
+		return;
+	}
 }
 
 
@@ -29,3 +49,37 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	DashAbilityModel.AdvanceTime(DeltaTime);
 }
 
+bool UDashComponent::RequestDash(const FVector2D& MovementInput)
+{
+	AActor* Actor = GetOwner();
+	if (!Actor)
+	{
+		return false;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(Actor);
+	if (!Character)
+	{
+		return false;
+	}
+
+	UCharacterMovementComponent* MovementComponent = Character->GetCharacterMovement();
+	if (!MovementComponent)
+	{
+		return false;
+	}
+
+	const bool bIsAirborne = MovementComponent->IsFalling();
+	
+	const FRotator ControlRotation = Character->GetControlRotation();
+	const FRotator YawRotation(0.0f, ControlRotation.Yaw, 0.0f);
+
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	return DashAbilityModel.TryStartDash(
+		MovementInput,
+		ForwardDirection,
+		RightDirection,
+		bIsAirborne);
+}

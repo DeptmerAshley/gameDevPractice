@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "AshenStep.h"
 #include "HealthComponent.h"
+#include "DashComponent.h"
 
 AAshenStepCharacter::AAshenStepCharacter()
 {
@@ -137,5 +138,10 @@ void AAshenStepCharacter::DoJumpEnd()
 
 UHealthComponent* AAshenStepCharacter::GetHealthComponent() const
 {
-	return this->HealthComponent;
+	return HealthComponent;
+}
+
+UDashComponent* AAshenStepCharacter::GetDashComponent() const
+{
+	return DashComponent;
 }

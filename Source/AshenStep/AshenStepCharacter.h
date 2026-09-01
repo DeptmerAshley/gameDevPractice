@@ -12,6 +12,7 @@ class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UDashComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -99,8 +100,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDashComponent> DashComponent;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	UHealthComponent* GetHealthComponent() const;
+	UDashComponent* GetDashComponent() const;
 
 };
