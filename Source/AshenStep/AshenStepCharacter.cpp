@@ -73,8 +73,8 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Dash 
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AAshenStepCharacter::Dash);
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &AAshenStepCharacter::StopMoveInput);
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Canceled, this, &AAshenStepCharacter::StopMoveInput);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AAshenStepCharacter::StopMoveInput);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AAshenStepCharacter::StopMoveInput);
 	}
 	else
 	{
@@ -88,6 +88,11 @@ void AAshenStepCharacter::Move(const FInputActionValue& Value)
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	CurrentMovementInput = MovementVector;
+
+	if (DashComponent)
+	{
+		return;
+	}
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);

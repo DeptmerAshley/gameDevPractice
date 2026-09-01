@@ -49,7 +49,7 @@ private:
 	float MomentumContribution = 0.25f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
-	float MaxMomentumBonus = 200f;
+	float MaxMomentumBonus = 200.0f;
 
 	float ActiveDashSpeed = 0.0f;
 
@@ -58,5 +58,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	bool RequestDash(const FVector2D& MovementInput);
+	const bool IsDashing();
 
 };

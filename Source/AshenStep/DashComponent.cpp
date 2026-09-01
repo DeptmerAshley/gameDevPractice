@@ -65,7 +65,8 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		// Attempt collision-safe movement
 		const FVector DashDirection = DashAbilityModel.GetDashDirection();
 
-		const float DashSpeed = DashAbilityModel.GetDashSpeed();
+		// const float DashSpeed = DashAbilityModel.GetDashSpeed();
+		const float DashSpeed = ActiveDashSpeed;
 
 		const FVector FrameDisplacement = DashDirection * DashSpeed * DeltaTime;
 
@@ -125,4 +126,13 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	CachedMovementComponent->StopMovementImmediately();
 
 	return true;
+}
+
+const bool IsDashing()
+{
+	if ((FDashAbilityModel.GetState()) == EDashState::Dashing)
+	{
+		return true;
+	}
+	return false;
 }
