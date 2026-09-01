@@ -47,6 +47,8 @@ public:
 		const FVector& ForwardDirection,
 		const FVector& RightDirection);
 
+	float GetDashSpeed();
+
 private:
 	FDashConfig Config;
 	EDashState State = EDashState::Ready;

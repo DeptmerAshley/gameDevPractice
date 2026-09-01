@@ -51,14 +51,34 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		return;
 	}
 
-	DashAbilityModel.AdvanceTime(DeltaTime);
-
 	if (DashAbilityModel.GetState() == EDashState::Dashing)
 	{
 		//Determine frame displacement
 		// Attempt collision-safe movement
+		const FVector DashDirection = DashAbilityModel.GetDashDirection();
+
+		const float DashSpeed = DashAbilityModel.GetDashSpeed();
+
+		const FVector FrameDisplacement = DashDirection * DashSpeed * DeltaTime;
+
+		FHitResult Hit;
+
+		CachedMovementComponent->SafeMoveUpdatedComponent(
+			FrameDisplacement,
+			CachedCharacter->GetActorQuat(),
+			true,
+			Hit
+		);
+
+		if (Hit.IsValidBlockingHit())
+		{
+			DashAbilityModel.EndDashEarly();
+		}
 	}
+
 	// Advance the models time/state
+	DashAbilityModel.AdvanceTime(DeltaTime);
+
 }
 
 bool UDashComponent::RequestDash(const FVector2D& MovementInput)

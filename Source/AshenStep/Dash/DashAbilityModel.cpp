@@ -103,3 +103,14 @@ FVector FDashAbilityModel::ResolveDashDirection(
 
 	return DesiredDirection.GetSafeNormal();
 }
+
+float FDashAbilityModel::GetDashSpeed()
+{
+	if (Config.Duration <= UE_SMALL_NUMBER)
+	{
+		return 0.0f;
+	}
+
+	return Config.Distance / Config.Duration;
+
+}
