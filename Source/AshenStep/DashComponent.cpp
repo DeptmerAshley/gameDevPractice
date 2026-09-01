@@ -128,9 +128,9 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	return true;
 }
 
-const bool IsDashing()
+bool UDashComponent::IsDashing() const
 {
-	if ((FDashAbilityModel.GetState()) == EDashState::Dashing)
+	if ((DashAbilityModel.GetState()) == EDashState::Dashing)
 	{
 		return true;
 	}

@@ -89,7 +89,7 @@ void AAshenStepCharacter::Move(const FInputActionValue& Value)
 
 	CurrentMovementInput = MovementVector;
 
-	if (DashComponent)
+	if ((DashComponent) && (DashComponent->IsDashing() == true)) 
 	{
 		return;
 	}

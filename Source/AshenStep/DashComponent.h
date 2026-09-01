@@ -58,6 +58,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	bool RequestDash(const FVector2D& MovementInput);
-	const bool IsDashing();
+	bool IsDashing() const;
 
 };
