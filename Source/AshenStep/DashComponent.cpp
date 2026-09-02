@@ -60,17 +60,16 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	bool bHitBlockingCollisionThisFrame = false;
-	bool bIsDashing = false;
+	bool bWasDashing = false;
 
 	if (DashAbilityModel.GetState() == EDashState::Dashing)
 	{
-		bIsDashing = true;
+		bWasDashing = true;
 
 		//Determine frame displacement
 		// Attempt collision-safe movement
 		const FVector DashDirection = DashAbilityModel.GetDashDirection();
 
-		// const float DashSpeed = DashAbilityModel.GetDashSpeed();
 		const float DashSpeed = ActiveDashSpeed;
 
 		const FVector FrameDisplacement = DashDirection * DashSpeed * DeltaTime;
@@ -93,9 +92,9 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// Advance the models time/state
 	DashAbilityModel.AdvanceTime(DeltaTime);
-	if (!bHitBlockingCollisionThisFrame)
+	if (!bWasDashing)
 	{
-		HandleDashEnded(bHadMovementInputAtDashStart);
+		HandleDashEnded(bHitBlockingCollisionThisFrame);
 	}
 }
 
@@ -158,10 +157,10 @@ void UDashComponent::HandleDashEnded(bool bWasBlocked)
 		return;
 	}
 
-	if (!bWasBlocked)
+	if (!bWasBlocked && )
 	{
-		float UnclampedExitSpeed = ActiveDashSpeed * ExitSpeedRetention;
-		float ExitSpeed = FMath::Clamp(UnclampedExitSpeed, 0.0f, CachedMovementComponent->MaxWalkSpeed);
+		const float UnclampedExitSpeed = ActiveDashSpeed * ExitSpeedRetention;
+		const float ExitSpeed = FMath::Clamp(UnclampedExitSpeed, 0.0f, CachedMovementComponent->MaxWalkSpeed);
 		const FVector& DashDirection = DashAbilityModel.GetDashDirection();
 		CachedMovementComponent->Velocity = DashDirection * ExitSpeed;
 	}
