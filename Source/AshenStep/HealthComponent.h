@@ -36,7 +36,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	float ApplyDamage(const FDamageContext& DamageContext);
 
-	UFUNCTION(BlueprintAuthorityOnly, Category = "Damage")
+	UFUNCTION(BlueprintCallable, Category = "Damage")
 	float ApplyDamageAmount(float Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
