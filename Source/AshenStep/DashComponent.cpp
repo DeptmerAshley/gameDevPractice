@@ -92,7 +92,9 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// Advance the models time/state
 	DashAbilityModel.AdvanceTime(DeltaTime);
-	if (!bWasDashing)
+
+	const bool bDashEndedThisFrame = bWasDashing && !IsDashing();
+	if (!bDashEndedThisFrame)
 	{
 		HandleDashEnded(bHitBlockingCollisionThisFrame);
 	}
@@ -157,7 +159,7 @@ void UDashComponent::HandleDashEnded(bool bWasBlocked)
 		return;
 	}
 
-	if (!bWasBlocked && )
+	if (!bWasBlocked && bHadMovementInputAtDashStart)
 	{
 		const float UnclampedExitSpeed = ActiveDashSpeed * ExitSpeedRetention;
 		const float ExitSpeed = FMath::Clamp(UnclampedExitSpeed, 0.0f, CachedMovementComponent->MaxWalkSpeed);
