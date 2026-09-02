@@ -25,3 +25,7 @@ void ADamageTestTarget::Tick(float DeltaTime)
 
 }
 
+UHealthComponent* ADamageTestTarget::GetHealthComponent() const
+{
+	return HealthComponent;
+}
