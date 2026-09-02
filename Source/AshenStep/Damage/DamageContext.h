@@ -8,6 +8,7 @@
 UENUM (BlueprintType)
 enum class EDamageType : uint8
 {
+	None UMETA(DisplayName = "None"),
 	Fire UMETA(DisplayName = "Fire"),
 	Blunt UMETA(DisplayName = "Blunt"),
 	Slice UMETA(DisplayName = "Slice")
@@ -20,7 +21,7 @@ struct ASHENSTEP_API FDamageContext
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
-	float DamageAmount = 10.0f;
+	float DamageAmount = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	TObjectPtr<AActor> DamageInstigator = nullptr;
@@ -31,8 +32,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	FVector DamageHitLocation = FVector::ZeroVector;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Damage|Type")
-	EDamageType DamageType = EDamageType::Blunt;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage|Type")
+	EDamageType DamageType = EDamageType::None;
 
 	FDamageContext() = default;
 };
