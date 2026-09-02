@@ -156,10 +156,46 @@ bool FDamageContextDefaultTest::RunTest(const FString& Parameters)
 {
 	AshenStep::Tests::FHealthTestFixture Fixture;
 	UHealthComponent* Health = Fixture.GetHealth();
+	UHealthComponentTestListener* Listener = NewObject<UHealthComponentTestListener>();
+	Listener->AddToRoot();
+	Health->OnHealthChanged.AddDynamic(Listener, &UHealthComponentTestListener::HandleHealthChanged);
+	Health->OnDamageReceived.AddDynamic(Listener, &UHealthComponentTestListener::HandleDamageReceived);
+	Health->OnDeath.AddDynamic(Listener, &UHealthComponentTestListener::HandleDeath);
 	const FDamageContext DamageContext;
 
 	TestEqual(TEXT("Default context applies no damage"), Health->ApplyDamage(DamageContext), 0.0f);
 	TestEqual(TEXT("Default context leaves health unchanged"), Health->GetCurrentHealth(), 100.0f);
+	TestEqual(TEXT("Default context does not broadcast health change"), Listener->HealthChangedCount, 0);
+	TestEqual(TEXT("Default context does not broadcast damage received"), Listener->DamageReceivedCount, 0);
+	TestEqual(TEXT("Default context does not broadcast death"), Listener->DeathCount, 0);
+
+	Listener->RemoveFromRoot();
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAmountDamageCompatibilityTest,
+	"AshenStep.Health.DamageContext.AmountEntryBuildsDefaultContext",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FAmountDamageCompatibilityTest::RunTest(const FString& Parameters)
+{
+	AshenStep::Tests::FHealthTestFixture Fixture;
+	UHealthComponent* Health = Fixture.GetHealth();
+	UHealthComponentTestListener* Listener = NewObject<UHealthComponentTestListener>();
+	Listener->AddToRoot();
+	Health->OnDamageReceived.AddDynamic(Listener, &UHealthComponentTestListener::HandleDamageReceived);
+
+	TestEqual(TEXT("Amount entry applies damage"), Health->ApplyDamageAmount(20.0f), 20.0f);
+	TestEqual(TEXT("Amount entry broadcasts once"), Listener->DamageReceivedCount, 1);
+	TestEqual(TEXT("Amount entry preserves requested damage"), Listener->LastDamageContext.DamageAmount, 20.0f);
+	TestEqual(TEXT("Amount entry reports applied damage"), Listener->LastAppliedDamage, 20.0f);
+	TestNull(TEXT("Amount entry defaults instigator to null"), Listener->LastDamageContext.DamageInstigator.Get());
+	TestNull(TEXT("Amount entry defaults source to null"), Listener->LastDamageContext.DamageSource.Get());
+	TestEqual(TEXT("Amount entry defaults hit location to zero"), Listener->LastDamageContext.DamageHitLocation, FVector::ZeroVector);
+	TestTrue(TEXT("Amount entry defaults damage type to none"), Listener->LastDamageContext.DamageType == EDamageType::None);
+
+	Listener->RemoveFromRoot();
 	return true;
 }
 
@@ -237,20 +273,61 @@ bool FStructuredDamageRejectionTest::RunTest(const FString& Parameters)
 	UHealthComponent* Health = Fixture.GetHealth();
 	UHealthComponentTestListener* Listener = NewObject<UHealthComponentTestListener>();
 	Listener->AddToRoot();
+	Health->OnHealthChanged.AddDynamic(Listener, &UHealthComponentTestListener::HandleHealthChanged);
 	Health->OnDamageReceived.AddDynamic(Listener, &UHealthComponentTestListener::HandleDamageReceived);
+	Health->OnDeath.AddDynamic(Listener, &UHealthComponentTestListener::HandleDeath);
 
 	FDamageContext DamageContext;
 	DamageContext.DamageAmount = 0.0f;
 	TestEqual(TEXT("Zero structured damage is rejected"), Health->ApplyDamage(DamageContext), 0.0f);
 	DamageContext.DamageAmount = -10.0f;
 	TestEqual(TEXT("Negative structured damage is rejected"), Health->ApplyDamage(DamageContext), 0.0f);
+	TestEqual(TEXT("Invalid damage does not broadcast health change"), Listener->HealthChangedCount, 0);
 	TestEqual(TEXT("Invalid damage does not broadcast"), Listener->DamageReceivedCount, 0);
+	TestEqual(TEXT("Invalid damage does not broadcast death"), Listener->DeathCount, 0);
 
 	DamageContext.DamageAmount = 100.0f;
 	Health->ApplyDamage(DamageContext);
 	DamageContext.DamageAmount = 10.0f;
 	TestEqual(TEXT("Post-death structured damage is rejected"), Health->ApplyDamage(DamageContext), 0.0f);
+	TestEqual(TEXT("Only the lethal hit broadcasts health change"), Listener->HealthChangedCount, 1);
 	TestEqual(TEXT("Only the lethal hit broadcasts damage"), Listener->DamageReceivedCount, 1);
+	TestEqual(TEXT("Only the lethal hit broadcasts death"), Listener->DeathCount, 1);
+
+	Listener->RemoveFromRoot();
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMultipleStructuredDamageTest,
+	"AshenStep.Health.DamageContext.MultipleValidHitsBroadcastOnceEach",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMultipleStructuredDamageTest::RunTest(const FString& Parameters)
+{
+	AshenStep::Tests::FHealthTestFixture Fixture;
+	UHealthComponent* Health = Fixture.GetHealth();
+	UHealthComponentTestListener* Listener = NewObject<UHealthComponentTestListener>();
+	Listener->AddToRoot();
+	Health->OnHealthChanged.AddDynamic(Listener, &UHealthComponentTestListener::HandleHealthChanged);
+	Health->OnDamageReceived.AddDynamic(Listener, &UHealthComponentTestListener::HandleDamageReceived);
+	Health->OnDeath.AddDynamic(Listener, &UHealthComponentTestListener::HandleDeath);
+
+	FDamageContext FirstHit;
+	FirstHit.DamageAmount = 10.0f;
+	FirstHit.DamageType = EDamageType::Blunt;
+	FDamageContext SecondHit;
+	SecondHit.DamageAmount = 35.0f;
+	SecondHit.DamageType = EDamageType::Slice;
+
+	TestEqual(TEXT("First hit applies once"), Health->ApplyDamage(FirstHit), 10.0f);
+	TestEqual(TEXT("Second hit applies once"), Health->ApplyDamage(SecondHit), 35.0f);
+	TestEqual(TEXT("Two hits leave expected health"), Health->GetCurrentHealth(), 55.0f);
+	TestEqual(TEXT("Each valid hit broadcasts one health change"), Listener->HealthChangedCount, 2);
+	TestEqual(TEXT("Each valid hit broadcasts one damage event"), Listener->DamageReceivedCount, 2);
+	TestEqual(TEXT("Nonlethal hits do not broadcast death"), Listener->DeathCount, 0);
+	TestEqual(TEXT("Latest event carries second requested amount"), Listener->LastDamageContext.DamageAmount, 35.0f);
+	TestTrue(TEXT("Latest event carries second damage type"), Listener->LastDamageContext.DamageType == EDamageType::Slice);
 
 	Listener->RemoveFromRoot();
 	return true;
@@ -273,6 +350,10 @@ bool FStructuredOverkillAndDeathContextTest::RunTest(const FString& Parameters)
 
 	FDamageContext DamageContext;
 	DamageContext.DamageAmount = 250.0f;
+	AActor* Instigator = GWorld->SpawnActor<AActor>();
+	AActor* Source = GWorld->SpawnActor<AActor>();
+	DamageContext.DamageInstigator = Instigator;
+	DamageContext.DamageSource = Source;
 	DamageContext.DamageHitLocation = FVector(10.0f, 20.0f, 30.0f);
 	DamageContext.DamageType = EDamageType::Slice;
 
@@ -281,6 +362,8 @@ bool FStructuredOverkillAndDeathContextTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Event distinguishes actual overkill damage"), Listener->LastAppliedDamage, 100.0f);
 	TestEqual(TEXT("Death broadcasts exactly once"), Listener->DeathCount, 1);
 	TestEqual(TEXT("Death preserves lethal hit amount"), Listener->LastDeathContext.DamageAmount, 250.0f);
+	TestEqual(TEXT("Death preserves lethal instigator"), Listener->LastDeathContext.DamageInstigator.Get(), Instigator);
+	TestEqual(TEXT("Death preserves lethal source"), Listener->LastDeathContext.DamageSource.Get(), Source);
 	TestEqual(TEXT("Death preserves lethal hit location"), Listener->LastDeathContext.DamageHitLocation, DamageContext.DamageHitLocation);
 	TestTrue(TEXT("Death preserves lethal damage type"), Listener->LastDeathContext.DamageType == EDamageType::Slice);
 	TestEqual(TEXT("Health change is first"), Listener->EventOrder[0], FName(TEXT("HealthChanged")));
@@ -291,6 +374,8 @@ bool FStructuredOverkillAndDeathContextTest::RunTest(const FString& Parameters)
 	Health->ApplyDamage(DamageContext);
 	TestEqual(TEXT("Post-death damage does not repeat death"), Listener->DeathCount, 1);
 
+	GWorld->DestroyActor(Source);
+	GWorld->DestroyActor(Instigator);
 	Listener->RemoveFromRoot();
 	return true;
 }
