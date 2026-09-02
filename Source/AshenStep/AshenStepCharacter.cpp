@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "AshenStep.h"
 #include "HealthComponent.h"
+#include "DashComponent.h"
 
 AAshenStepCharacter::AAshenStepCharacter()
 {
@@ -51,6 +52,7 @@ AAshenStepCharacter::AAshenStepCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("DashComponent"));
 }
 
 void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -68,6 +70,11 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAshenStepCharacter::Look);
+
+		// Dash 
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AAshenStepCharacter::Dash);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AAshenStepCharacter::StopMoveInput);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AAshenStepCharacter::StopMoveInput);
 	}
 	else
 	{
@@ -78,10 +85,39 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void AAshenStepCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	CurrentMovementInput = MovementVector;
+
+	if ((DashComponent) && (DashComponent->IsDashing() == true))
+	{
+		return;
+	}
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
+}
+
+void AAshenStepCharacter::StopMoveInput()
+{
+	CurrentMovementInput = FVector2D::ZeroVector;
+}
+
+void AAshenStepCharacter::Dash()
+{
+	if (!DashComponent)
+	{
+		return;
+	}
+
+	const bool bDashStarted = DashComponent->RequestDash(CurrentMovementInput);
+
+	UE_LOG(
+		LogAshenStep,
+		Log,
+		TEXT("Dash request: %s"),
+		bDashStarted ? TEXT("accepted") : TEXT("rejected")
+	);
 }
 
 void AAshenStepCharacter::Look(const FInputActionValue& Value)
@@ -137,5 +173,10 @@ void AAshenStepCharacter::DoJumpEnd()
 
 UHealthComponent* AAshenStepCharacter::GetHealthComponent() const
 {
-	return this->HealthComponent;
+	return HealthComponent;
+}
+
+UDashComponent* AAshenStepCharacter::GetDashComponent() const
+{
+	return DashComponent;
 }

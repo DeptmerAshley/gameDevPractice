@@ -12,6 +12,7 @@ class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UDashComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -50,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DashAction;
+
 public:
 
 	/** Constructor */
@@ -65,8 +69,16 @@ protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
+	// Clear cached movement after input ends
+	void StopMoveInput();
+
+	// Call dash when input begins
+	void Dash();
+
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	FVector2D CurrentMovementInput = FVector2D::ZeroVector;
 
 public:
 
@@ -99,8 +111,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDashComponent> DashComponent;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	UHealthComponent* GetHealthComponent() const;
+
+	UFUNCTION(BlueprintPure, Category = "Movement")
+	UDashComponent* GetDashComponent() const;
 
 };
