@@ -94,7 +94,7 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	DashAbilityModel.AdvanceTime(DeltaTime);
 
 	const bool bDashEndedThisFrame = bWasDashing && !IsDashing();
-	if (!bDashEndedThisFrame)
+	if (bDashEndedThisFrame)
 	{
 		HandleDashEnded(bHitBlockingCollisionThisFrame);
 	}
@@ -127,10 +127,7 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	const float BaseDashSpeed = DashAbilityModel.GetDashSpeed();
 	const FVector& DashDirection = DashAbilityModel.GetDashDirection();
 
-	if (!MovementInput.IsNearlyZero())
-	{
-		bHadMovementInputAtDashStart = true;
-	}
+	bHadMovementInputAtDashStart = !MovementInput.IsNearlyZero();
 
 	const float ForwardMomentum = FVector::DotProduct(HorizontalVelocity, DashDirection);
 	const float UnclampedMomentumBonus = FMath::Max(ForwardMomentum, 0.0f) * MomentumContribution;
