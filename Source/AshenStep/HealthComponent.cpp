@@ -40,7 +40,11 @@ bool UHealthComponent::IsAlive() const
 	return CurrentHealth > 0.0f;
 }
 
-float UHealthComponent::ApplyDamage(float Amount)
+float UHealthComponent::ApplyDamage(float Amount,
+	TObjectPtr<AActor> Instigator,
+	TObjectPtr<AActor> Source,
+	FVector HitLocation,
+	EDamageType Type)
 {
 	if (Amount <= 0.0f || !IsAlive())
 	{
