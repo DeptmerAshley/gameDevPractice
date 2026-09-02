@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Damage/DamageContext.h"
 #include "HealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
@@ -32,8 +33,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsAlive() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	float ApplyDamage(float Amount);
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	float ApplyDamage(const FDamageContext& DamageContext);
+
+	UFUNCTION(BlueprintAuthorityOnly, Category = "Damage")
+	float ApplyDamageAmount(float Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float Heal(float Amount);

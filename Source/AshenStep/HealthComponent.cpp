@@ -40,9 +40,9 @@ bool UHealthComponent::IsAlive() const
 	return CurrentHealth > 0.0f;
 }
 
-float UHealthComponent::ApplyDamage(float Amount)
+float UHealthComponent::ApplyDamage(const FDamageContext& DamageContext)
 {
-	if (Amount <= 0.0f || !IsAlive())
+	if (DamageContext.DamageAmount <= 0.0f || !IsAlive())
 	{
 		return 0.0f;
 	}
@@ -50,7 +50,7 @@ float UHealthComponent::ApplyDamage(float Amount)
 	const float PreviousHealth = CurrentHealth;
 
 	CurrentHealth = FMath::Clamp(
-		CurrentHealth - Amount,
+		CurrentHealth - DamageContext.DamageAmount,
 		0.0f,
 		MaxHealth
 	);
@@ -69,6 +69,12 @@ float UHealthComponent::ApplyDamage(float Amount)
 	}
 
 	return AppliedDamage;
+}
+
+float UHealthComponent::ApplyDamageAmount(float Amount)
+{
+	FDamageContext DamageContext;
+	DamageContext.DamageAmount = Amount;
 }
 
 float UHealthComponent::Heal(float Amount)
