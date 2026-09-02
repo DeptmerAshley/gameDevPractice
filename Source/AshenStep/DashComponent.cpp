@@ -54,15 +54,18 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	bool bCollision = false;
-
 	if (!IsValid(CachedCharacter) || !IsValid(CachedMovementComponent))
 	{
 		return;
 	}
 
+	bool bHitBlockingCollisionThisFrame = false;
+	bool bIsDashing = false;
+
 	if (DashAbilityModel.GetState() == EDashState::Dashing)
 	{
+		bIsDashing = true;
+
 		//Determine frame displacement
 		// Attempt collision-safe movement
 		const FVector DashDirection = DashAbilityModel.GetDashDirection();
@@ -83,13 +86,17 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 		if (Hit.IsValidBlockingHit())
 		{
-			bCollision = true;
+			bHitBlockingCollisionThisFrame = true;
 			DashAbilityModel.EndDashEarly();
 		}
 	}
 
 	// Advance the models time/state
 	DashAbilityModel.AdvanceTime(DeltaTime);
+	if (!bHitBlockingCollisionThisFrame)
+	{
+		HandleDashEnded(bHadMovementInputAtDashStart);
+	}
 }
 
 bool UDashComponent::RequestDash(const FVector2D& MovementInput)
@@ -100,7 +107,7 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	}
 
 	const bool bIsAirborne = CachedMovementComponent->IsFalling();
-	
+
 	const FRotator ControlRotation = CachedCharacter->GetControlRotation();
 	const FRotator YawRotation(0.0f, ControlRotation.Yaw, 0.0f);
 
@@ -118,6 +125,11 @@ bool UDashComponent::RequestDash(const FVector2D& MovementInput)
 	HorizontalVelocity.Z = 0.0f;
 	const float BaseDashSpeed = DashAbilityModel.GetDashSpeed();
 	const FVector& DashDirection = DashAbilityModel.GetDashDirection();
+
+	if (!MovementInput.IsNearlyZero())
+	{
+		bHadMovementInputAtDashStart = true;
+	}
 
 	const float ForwardMomentum = FVector::DotProduct(HorizontalVelocity, DashDirection);
 	const float UnclampedMomentumBonus = FMath::Max(ForwardMomentum, 0.0f) * MomentumContribution;
@@ -137,4 +149,22 @@ bool UDashComponent::IsDashing() const
 		return true;
 	}
 	return false;
+}
+
+void UDashComponent::HandleDashEnded(bool bWasBlocked)
+{
+	if (!CachedMovementComponent)
+	{
+		return;
+	}
+
+	if (!bWasBlocked)
+	{
+		float UnclampedExitSpeed = ActiveDashSpeed * ExitSpeedRetention;
+		float ExitSpeed = FMath::Clamp(UnclampedExitSpeed, 0.0f, CachedMovementComponent->MaxWalkSpeed);
+		const FVector& DashDirection = DashAbilityModel.GetDashDirection();
+		CachedMovementComponent->Velocity = DashDirection * ExitSpeed;
+	}
+	ActiveDashSpeed = 0.0f;
+	bHadMovementInputAtDashStart = false;
 }

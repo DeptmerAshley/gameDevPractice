@@ -57,6 +57,8 @@ private:
 	float ActiveDashSpeed = 0.0f;
 	bool bHadMovementInputAtDashStart = false;
 
+	void HandleDashEnded(bool bWasBlocked);
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
