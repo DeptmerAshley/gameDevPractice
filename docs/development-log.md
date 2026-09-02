@@ -52,18 +52,33 @@ Build the first expressive movement ability: a directional dash with clear timin
 Implement a testable directional dash and connect it to the playable character and Enhanced Input system.
 
 ### Result
-Defined the dash contract with automated tests before implementation, then created an engine-independent `FDashAbilityModel` for direction capture and the Ready, Dashing, and Cooldown state transitions. Added early dash cancellation and timing logic that handles frame steps crossing multiple state boundaries. Created `UDashComponent`, attached it to `AAshenStepCharacter`, cached the owning character, updated dash behavior each frame, and added the complete dash input action, mapping, and character input handler. Final Unreal testing corrected the input trigger to fire once when the action starts and clear movement input when it completes or is canceled.
+Defined the dash contract with automated tests before implementation, then created an engine-independent `FDashAbilityModel` for camera-relative direction capture, fallback-forward behavior, and the Ready, Dashing, and Cooldown state transitions. Added early dash cancellation and timing logic that carries leftover frame time across state boundaries.
+
+Created `UDashComponent`, attached it to `AAshenStepCharacter`, and connected a dedicated Enhanced Input action. The component now performs swept physical movement, terminates on blocking collisions, exposes distance, duration, cooldown, airborne use, momentum contribution, maximum momentum bonus, and exit-speed retention as Blueprint defaults, and suppresses normal movement application while retaining player input intent. Pre-dash horizontal velocity contributes a directionally projected and capped momentum bonus. Normal dash completion restores a capped exit velocity when movement input initiated the dash, while collision termination skips forward exit velocity.
 
 ### Verification
 
-- Build/test performed: Added six Unreal Automation tests under `AshenStep.Dash` covering defaults, direction handling, state progression, early ending, grounded/airborne rules, cooldown, and large frame steps.
-- Result: The red test contract was merged through PR #17 before the implementation; the completed ability was tested in Unreal with debug logs and its final input wiring correction is recorded on `feature/dash`.
-- Screenshot, recording, commit, or profiling evidence: `18ec5a4` (test contract), `5e8c425` through `7c747de` (model, component, character, and input implementation), `d0df704` (final Unreal test and input correction).
+- Build/test performed: Added six Unreal Automation tests under `AshenStep.Dash` covering defaults, direction resolution, state progression, early termination, grounded/airborne rules, cooldown boundaries, repeated requests, and a large frame spanning dash and cooldown. Rebuilt and manually tested the physical dash in Unreal during implementation.
+- Result: Directional and fallback dashes move the player; downhill slopes work; blocking geometry and small ledges terminate the dash; momentum and maximum bonus values were tuned; movement-to-dash-to-movement smoothing was implemented with retained exit velocity. Uphill slopes remain unsupported, and final frame-rate, visualization, and environmental verification is backlogged.
+- Screenshot, recording, commit, or profiling evidence: `18ec5a4` (test contract), `5e8c425` through `7c747de` (model, component, character, and input), `d493419` through `5e572bb` (physical movement and momentum), `6d7948c` (movement-input integration), `9f6515b` through `9b9e153` (exit-velocity transition and fixes).
 
 ### Obstacles and decisions
 
-Frame timing can cross the end of both the dash and cooldown in one update, so leftover time is carried across state transitions. Dash rules were kept in an engine-independent model to make behavior deterministic and straightforward to test, while the Actor Component handles Unreal character movement and input integration.
+Dash rules were kept in an engine-independent model so state and direction behavior remain deterministic, while the Actor Component owns Unreal movement, collision, momentum, and exit-velocity integration. Direct swept movement made collision termination straightforward but does not reproduce Character Movement's complete walking step-up behavior; small ledges currently count as blocking collisions. Uphill slope support requires projecting grounded dash direction onto the walkable floor plane or integrating more of Character Movement's walking behavior.
+
+### Backlog
+
+- Project grounded dash movement onto walkable uphill slopes.
+- Decide whether small walkable ledges should terminate the dash or use step-up handling.
+- Prevent physical-distance overshoot when a frame crosses the dash-duration boundary.
+- Add a displacement or speed curve for tunable ease-in/ease-out while preserving total distance.
+- Add debug direction, path, state, and collision visualization.
+- Verify physical distance and transition behavior at 30, 60, and 120 FPS.
+- Add automated coverage for physical displacement, momentum contribution/capping, collision termination, and exit velocity.
+- Capture durable video or screenshot evidence.
+- Clean remaining whitespace and minor Boolean/accessor style issues.
+- Add invulnerability frames later if required by the combat design; excluded from the current Day 4 completion scope.
 
 ### Next action
 
-Merge `feature/dash`, capture durable screenshot or recording evidence, and tune dash distance, duration, cooldown, and animation feel.
+Move to Day 5 and extend the existing health foundation with structured damage context, damage-received and death events, temporary damage targets, and the remaining zero, negative, lethal, repeated, and post-death verification. Return to the Day 4 backlog during the next movement-polish pass.
