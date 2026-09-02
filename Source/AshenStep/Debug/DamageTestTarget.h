@@ -7,6 +7,7 @@
 #include "DamageTestTarget.generated.h"
 
 class UHealthComponent;
+class UStaticMeshComponent;
 
 UCLASS()
 class ASHENSTEP_API ADamageTestTarget : public AActor
@@ -23,6 +24,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> TargetMesh;
 
 public:	
 	// Called every frame
