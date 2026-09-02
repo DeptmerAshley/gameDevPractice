@@ -54,6 +54,8 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	bool bCollision = false;
+
 	if (!IsValid(CachedCharacter) || !IsValid(CachedMovementComponent))
 	{
 		return;
@@ -81,13 +83,13 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 		if (Hit.IsValidBlockingHit())
 		{
+			bCollision = true;
 			DashAbilityModel.EndDashEarly();
 		}
 	}
 
 	// Advance the models time/state
 	DashAbilityModel.AdvanceTime(DeltaTime);
-
 }
 
 bool UDashComponent::RequestDash(const FVector2D& MovementInput)

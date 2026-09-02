@@ -51,7 +51,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
 	float MaxMomentumBonus = 200.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+	float ExitSpeedRetention = 0.2f;
+
 	float ActiveDashSpeed = 0.0f;
+	bool bHadMovementInputAtDashStart = false;
 
 public:	
 	// Called every frame
