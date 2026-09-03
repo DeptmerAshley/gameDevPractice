@@ -12,6 +12,7 @@ ADamageTestTarget::ADamageTestTarget()
 	PrimaryActorTick.bCanEverTick = false;
 
 	TargetMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TargetMesh"));
+	SetRootComponent(TargetMesh);
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
@@ -20,13 +21,6 @@ void ADamageTestTarget::BeginPlay()
 {
 	Super::BeginPlay();
 	
-}
-
-// Called every frame
-void ADamageTestTarget::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 UHealthComponent* ADamageTestTarget::GetHealthComponent() const
