@@ -11,20 +11,31 @@ FMeleeAttackModel::~FMeleeAttackModel()
 {
 }
 
-bool FMeleeAttackModel::TryStartAttack(EMeleeState& State)
+bool FMeleeAttackModel::TryStartAttack()
 {
-	if (State == EMeleeState::Ready)
+	if (GetState() == EMeleeState::Ready)
 	{
+		State = EMeleeState::WindUp;
 		return true;
 	}
 	return false;
 }
 
-bool FMeleeAttackModel::TryAttack(EMeleeState& State)
+bool FMeleeAttackModel::TryAttack()
 {
-	if (TryStartAttack(State))
+	if (GetState() == EMeleeState::WindUp)
 	{
-		State = EMeleeState::WindUp;
+		State = EMeleeState::Active;
+		return true;
+	}
+	return false;
+}
+
+bool FMeleeAttackModel::TryEndAttack()
+{
+	if (GetState() == EMeleeState::Active)
+	{
+		State = EMeleeState::Recovery;
 		return true;
 	}
 	return false;

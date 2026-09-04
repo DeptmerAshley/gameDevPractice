@@ -19,8 +19,8 @@ public:
 	EMeleeState GetState() const { return State; }
 	// FMeleeAttackData GetAttackData() const { return MeleeAttackData; }
 
-	bool TryStartAttack(EMeleeState& State);
-	bool TryAttack(EMeleeState& State);
+	bool TryStartAttack();
+	bool TryAttack();
 	bool TryEndAttack();
 
 	FMeleeAttackModel();
