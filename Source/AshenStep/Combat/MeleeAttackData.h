@@ -7,33 +7,33 @@
 #include "MeleeAttackData.generated.h"
 
 class UAnimMontage;
-class USoundBase;
-class UCameraShakeBase;
+//class USoundBase;
+//class UCameraShakeBase;
 
 USTRUCT (BlueprintType)
 struct ASHENSTEP_API FMeleeAttackData
 {
 	GENERATED_BODY()
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UAnimMontage> Animation;
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> AttackMontage = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	float MontagePlayRate = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage", meta = (ClampMin = "0.0"))
 	float DamageAmount = 25.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	EDamageType DamageType = EDamageType::None;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", Units = "cm"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace", meta = (ClampMin = "0.0", Units = "cm"))
 	float TraceRadius = 12.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace")
 	FName TraceStartSocket = TEXT("weapon_base");
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess = "true"))
-	FName TraceEndSocket = TEXT("weapon_base");
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace")
+	FName TraceEndSocket = TEXT("weapon_tip");
 };
