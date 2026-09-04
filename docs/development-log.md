@@ -82,3 +82,27 @@ Dash rules were kept in an engine-independent model so state and direction behav
 ### Next action
 
 Move to Day 5 and extend the existing health foundation with structured damage context, damage-received and death events, temporary damage targets, and the remaining zero, negative, lethal, repeated, and post-death verification. Return to the Day 4 backlog during the next movement-polish pass.
+
+## 2026-9-3 — Day 5: Structured Damage and Practice Target
+
+### Goal
+Extend the reusable health system with structured damage information, gameplay events, complete boundary-case coverage, and a temporary in-world target for manually verifying the damage loop.
+
+### Result
+Added `FDamageContext` with requested damage amount, instigator, source, world-space hit location, and damage type. Updated `UHealthComponent` to accept structured damage, return the amount actually applied, and broadcast health-changed, damage-received, and death events while keeping health rules independent from animation and presentation.
+
+Added `ADamageTestTarget` and `BP_PracticeDummy` with a visible mesh, reusable health component, world-space health bar, and a temporary keyboard-triggered damage action. Updated the player health-bar integration so both the player and practice dummy supply their own health values to the reusable widget.
+
+### Verification
+
+- Build/test performed: Expanded the `AshenStep.Health` automation contract to cover structured and amount-only damage, event payloads and order, environmental damage, zero and negative damage, repeated hits, lethal overkill, and post-death rejection. Manually exercised the practice dummy and player health displays in Play mode.
+- Result: The practice dummy accepts test damage and updates its overhead health bar; the player health bar initializes and responds to health changes. Valid hits report applied damage, lethal damage reaches zero and broadcasts death once, and post-death damage is rejected.
+- Screenshot, recording, commit, or profiling evidence: `439037f` through `e61493b` (damage context, gameplay events, and automated coverage), `f450903` through `47cb6b7` (practice target, world placement, health-bar integration, and manual damage setup).
+
+### Obstacles and decisions
+
+The shared health widget originally attempted to read an unassigned health-component reference when instantiated for the practice dummy. Responsibility for obtaining health values and responding to health events was moved to each owning actor, leaving the widget focused on display. The damage-context fields were made Blueprint-writable so Blueprint test callers can construct the complete context.
+
+### Next action
+
+Run the complete `AshenStep.Health` automation suite once more, perform the final branch review, and merge Day 5. Then begin Day 6 with one data-driven melee attack using trace-based hit detection and the structured damage contract.
