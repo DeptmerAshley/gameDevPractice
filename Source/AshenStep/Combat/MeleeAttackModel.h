@@ -22,6 +22,7 @@ public:
 	bool TryStartAttack();
 	bool TryAttack();
 	bool TryEndAttack();
+	bool TryEndRecovery();
 
 	FMeleeAttackModel();
 	~FMeleeAttackModel();

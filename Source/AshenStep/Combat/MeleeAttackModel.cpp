@@ -40,3 +40,13 @@ bool FMeleeAttackModel::TryEndAttack()
 	}
 	return false;
 }
+
+bool FMeleeAttackModel::TryEndRecovery()
+{
+	if (GetState() == EMeleeState::Recovery)
+	{
+		State = EMeleeState::Ready;
+		return true;
+	}
+	return false;
+}
