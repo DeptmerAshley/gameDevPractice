@@ -50,3 +50,9 @@ bool FMeleeAttackModel::TryEndRecovery()
 	}
 	return false;
 }
+
+EMeleeState FMeleeAttackModel::EndAttackEarly()
+{
+	return EMeleeState::Recovery;
+}
+
