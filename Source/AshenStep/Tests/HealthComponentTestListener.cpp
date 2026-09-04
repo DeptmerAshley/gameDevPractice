@@ -8,8 +8,17 @@ void UHealthComponentTestListener::HandleHealthChanged(float CurrentHealth, floa
 	EventOrder.Add(TEXT("HealthChanged"));
 }
 
-void UHealthComponentTestListener::HandleDeath()
+void UHealthComponentTestListener::HandleDamageReceived(const FDamageContext& DamageContext, float AppliedDamage)
+{
+	++DamageReceivedCount;
+	LastDamageContext = DamageContext;
+	LastAppliedDamage = AppliedDamage;
+	EventOrder.Add(TEXT("DamageReceived"));
+}
+
+void UHealthComponentTestListener::HandleDeath(const FDamageContext& DamageContext)
 {
 	++DeathCount;
+	LastDeathContext = DamageContext;
 	EventOrder.Add(TEXT("Death"));
 }

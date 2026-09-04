@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Damage/DamageContext.h"
 #include "HealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
@@ -12,7 +13,16 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	float, MaxHealth
 );
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnDamageReceived,
+	const FDamageContext&, DamageContext,
+	float, AppliedDamage
+);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FOnDeath,
+	const FDamageContext&, DamageContext
+);
 
 UCLASS( ClassGroup=(Gameplay), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UHealthComponent : public UActorComponent
@@ -32,8 +42,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsAlive() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	float ApplyDamage(float Amount);
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	float ApplyDamage(const FDamageContext& DamageContext);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	float ApplyDamageAmount(float Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float Heal(float Amount);
@@ -41,6 +54,9 @@ public:
 	// Properties for applying damage, death, and changes to health
 	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
 	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
+	FOnDamageReceived OnDamageReceived;
 
 	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
 	FOnDeath OnDeath;
