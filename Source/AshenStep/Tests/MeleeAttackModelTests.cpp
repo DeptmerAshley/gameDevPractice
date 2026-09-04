@@ -38,15 +38,15 @@ bool FMeleeAttackCompleteLifecycleTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Starting enters wind-up"), Attack.GetState(), EMeleeState::WindUp);
 	TestFalse(TEXT("Wind-up cannot register hits"), Attack.CanRegisterHits());
 
-	TestTrue(TEXT("The authored begin-window signal succeeds during wind-up"), Attack.TryBeginAttackWindow());
+	TestTrue(TEXT("The authored begin-window signal succeeds during wind-up"), Attack.TryAttack());
 	TestEqual(TEXT("Opening the window enters active"), Attack.GetState(), EMeleeState::Active);
 	TestTrue(TEXT("Active attacks can register hits"), Attack.CanRegisterHits());
 
-	TestTrue(TEXT("The authored end-window signal succeeds while active"), Attack.TryEndAttackWindow());
+	TestTrue(TEXT("The authored end-window signal succeeds while active"), Attack.TryEndAttack());
 	TestEqual(TEXT("Closing the window enters recovery"), Attack.GetState(), EMeleeState::Recovery);
 	TestFalse(TEXT("Recovery cannot register hits"), Attack.CanRegisterHits());
 
-	TestTrue(TEXT("The authored completion signal succeeds during recovery"), Attack.TryCompleteAttack());
+	TestTrue(TEXT("The authored completion signal succeeds during recovery"), Attack.TryEndRecovery());
 	TestEqual(TEXT("Completion returns to ready"), Attack.GetState(), EMeleeState::Ready);
 	TestTrue(TEXT("Another attack may begin after completion"), Attack.CanStartAttack());
 	return true;
@@ -76,17 +76,17 @@ bool FMeleeAttackDuplicateSignalsTest::RunTest(const FString& Parameters)
 {
 	FMeleeAttackModel Attack;
 	Attack.TryStartAttack();
-	Attack.TryBeginAttackWindow();
+	Attack.TryAttack();
 
-	TestFalse(TEXT("A duplicate begin-window signal is rejected"), Attack.TryBeginAttackWindow());
+	TestFalse(TEXT("A duplicate begin-window signal is rejected"), Attack.TryAttack());
 	TestEqual(TEXT("A duplicate begin signal preserves active"), Attack.GetState(), EMeleeState::Active);
 
-	Attack.TryEndAttackWindow();
-	TestFalse(TEXT("A duplicate end-window signal is rejected"), Attack.TryEndAttackWindow());
+	Attack.TryEndAttack();
+	TestFalse(TEXT("A duplicate end-window signal is rejected"), Attack.TryEndAttack());
 	TestEqual(TEXT("A duplicate end signal preserves recovery"), Attack.GetState(), EMeleeState::Recovery);
 
-	Attack.TryCompleteAttack();
-	TestFalse(TEXT("A duplicate completion signal is rejected"), Attack.TryCompleteAttack());
+	Attack.TryEndRecovery();
+	TestFalse(TEXT("A duplicate completion signal is rejected"), Attack.TryEndRecovery());
 	TestEqual(TEXT("A duplicate completion preserves ready"), Attack.GetState(), EMeleeState::Ready);
 	return true;
 }
@@ -100,18 +100,18 @@ bool FMeleeAttackOutOfOrderSignalsTest::RunTest(const FString& Parameters)
 {
 	FMeleeAttackModel Attack;
 
-	TestFalse(TEXT("Ready rejects a begin-window signal"), Attack.TryBeginAttackWindow());
-	TestFalse(TEXT("Ready rejects an end-window signal"), Attack.TryEndAttackWindow());
-	TestFalse(TEXT("Ready rejects an early completion signal"), Attack.TryCompleteAttack());
+	TestFalse(TEXT("Ready rejects a begin-window signal"), Attack.TryAttack());
+	TestFalse(TEXT("Ready rejects an end-window signal"), Attack.TryEndAttack());
+	TestFalse(TEXT("Ready rejects an early completion signal"), Attack.TryEndRecovery());
 	TestEqual(TEXT("Invalid ready signals preserve ready"), Attack.GetState(), EMeleeState::Ready);
 
 	Attack.TryStartAttack();
-	TestFalse(TEXT("Wind-up rejects an end-window signal"), Attack.TryEndAttackWindow());
-	TestFalse(TEXT("Wind-up rejects an early completion signal"), Attack.TryCompleteAttack());
+	TestFalse(TEXT("Wind-up rejects an end-window signal"), Attack.TryEndAttack());
+	TestFalse(TEXT("Wind-up rejects an early completion signal"), Attack.TryEndRecovery());
 	TestEqual(TEXT("Invalid wind-up signals preserve wind-up"), Attack.GetState(), EMeleeState::WindUp);
 
-	Attack.TryBeginAttackWindow();
-	TestFalse(TEXT("Active rejects an early completion signal"), Attack.TryCompleteAttack());
+	Attack.TryAttack();
+	TestFalse(TEXT("Active rejects an early completion signal"), Attack.TryEndRecovery());
 	TestEqual(TEXT("An early completion preserves active"), Attack.GetState(), EMeleeState::Active);
 	return true;
 }
@@ -130,15 +130,15 @@ bool FMeleeAttackInterruptionTest::RunTest(const FString& Parameters)
 
 	FMeleeAttackModel ActiveAttack;
 	ActiveAttack.TryStartAttack();
-	ActiveAttack.TryBeginAttackWindow();
+	ActiveAttack.TryAttack();
 	ActiveAttack.Interrupt();
 	TestEqual(TEXT("Interrupting active returns to ready"), ActiveAttack.GetState(), EMeleeState::Ready);
 	TestFalse(TEXT("An interrupted active attack cannot register hits"), ActiveAttack.CanRegisterHits());
 
 	FMeleeAttackModel RecoveryAttack;
 	RecoveryAttack.TryStartAttack();
-	RecoveryAttack.TryBeginAttackWindow();
-	RecoveryAttack.TryEndAttackWindow();
+	RecoveryAttack.TryAttack();
+	RecoveryAttack.TryEndAttack();
 	RecoveryAttack.Interrupt();
 	TestEqual(TEXT("Interrupting recovery returns to ready"), RecoveryAttack.GetState(), EMeleeState::Ready);
 
