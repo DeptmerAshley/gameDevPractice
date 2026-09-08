@@ -11,6 +11,24 @@ FMeleeAttackModel::~FMeleeAttackModel()
 {
 }
 
+bool FMeleeAttackModel::CanStartAttack() const
+{
+	if (GetState() == EMeleeState::Ready)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool FMeleeAttackModel::CanRegisterHits() const
+{
+	if (GetState() == EMeleeState::Active)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool FMeleeAttackModel::TryStartAttack()
 {
 	if (GetState() == EMeleeState::Ready)
@@ -51,8 +69,9 @@ bool FMeleeAttackModel::TryEndRecovery()
 	return false;
 }
 
-EMeleeState FMeleeAttackModel::EndAttackEarly()
+bool FMeleeAttackModel::EndAttackEarly()
 {
-	return EMeleeState::Recovery;
+	State = EMeleeState::Ready;
+	return true;
 }
-
+ 

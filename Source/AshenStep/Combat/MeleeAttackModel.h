@@ -17,12 +17,15 @@ class ASHENSTEP_API FMeleeAttackModel
 {
 public:
 	EMeleeState GetState() const { return State; }
-	// FMeleeAttackData GetAttackData() const { return MeleeAttackData; }
+
+	bool CanStartAttack() const;
+	bool CanRegisterHits() const;
 
 	bool TryStartAttack();
 	bool TryAttack();
 	bool TryEndAttack();
 	bool TryEndRecovery();
+	bool EndAttackEarly();
 
 	FMeleeAttackModel();
 	~FMeleeAttackModel();
