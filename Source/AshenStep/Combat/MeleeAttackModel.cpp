@@ -71,7 +71,11 @@ bool FMeleeAttackModel::TryEndRecovery()
 
 bool FMeleeAttackModel::EndAttackEarly()
 {
-	State = EMeleeState::Ready;
-	return true;
+	if (GetState() != EMeleeState::Ready)
+	{
+		State = EMeleeState::Ready;
+		return true;
+	}
+	return false;
 }
  

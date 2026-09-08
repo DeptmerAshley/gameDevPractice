@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MeleeAttackData.h"
 
 enum class EMeleeState : uint8
 {
@@ -32,5 +31,4 @@ public:
 
 private:
 	EMeleeState State = EMeleeState::Ready;
-	FMeleeAttackData MeleeAttackData;
 };
