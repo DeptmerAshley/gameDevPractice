@@ -13,6 +13,7 @@ class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UDashComponent;
+class UMeleeAttackComponet;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -114,6 +115,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDashComponent> DashComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UMeleeAttackComponent> MeleeAttackComponent;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	UHealthComponent* GetHealthComponent() const;
@@ -121,4 +125,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Movement")
 	UDashComponent* GetDashComponent() const;
 
+	UFUNCTION(BlueprintPure, Category = "Melee Attack")
+	UMeleeAttackComponent* GetMeleeAttackComponent() const;
 };

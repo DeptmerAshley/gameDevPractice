@@ -13,6 +13,7 @@
 #include "AshenStep.h"
 #include "HealthComponent.h"
 #include "DashComponent.h"
+#include "MeleeAttackComponent.h"
 
 AAshenStepCharacter::AAshenStepCharacter()
 {
@@ -53,6 +54,7 @@ AAshenStepCharacter::AAshenStepCharacter()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("DashComponent"));
+	MeleeAttackComponent = CreateDefaultSubobject<UMeleeAttackComponent>(TEXT("MeleeAttackComponent"));
 }
 
 void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -179,4 +181,9 @@ UHealthComponent* AAshenStepCharacter::GetHealthComponent() const
 UDashComponent* AAshenStepCharacter::GetDashComponent() const
 {
 	return DashComponent;
+}
+
+UMeleeAttackComponent* AAshenStepCharacter::GetMeleeAttackComponent() const
+{
+	return MeleeAttackComponent;
 }
