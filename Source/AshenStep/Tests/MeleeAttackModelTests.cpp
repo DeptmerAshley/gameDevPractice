@@ -148,4 +148,72 @@ bool FMeleeAttackInterruptionTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMeleeAttackBusyInputTest,
+	"AshenStep.MeleeAttack.Model.BusyInputPreservesEveryPhase",
+	AshenStep::MeleeAttackTests::TestFlags)
+
+bool FMeleeAttackBusyInputTest::RunTest(const FString& Parameters)
+{
+	FMeleeAttackModel Attack;
+	TestTrue(TEXT("Initial press starts a swing"), Attack.TryStartAttack());
+	const EMeleeState BusyPhases[] = { EMeleeState::WindUp, EMeleeState::Active, EMeleeState::Recovery };
+	for (const EMeleeState Phase : BusyPhases)
+	{
+		if (Phase == EMeleeState::Active)
+		{
+			TestTrue(TEXT("Authored signal opens the window"), Attack.TryAttack());
+		}
+		else if (Phase == EMeleeState::Recovery)
+		{
+			TestTrue(TEXT("Authored signal closes the window"), Attack.TryEndAttack());
+		}
+		for (int32 Press = 0; Press < 5; ++Press)
+		{
+			TestFalse(TEXT("Busy phase reports that a new attack cannot start"), Attack.CanStartAttack());
+			TestFalse(TEXT("Repeated input cannot restart a busy attack"), Attack.TryStartAttack());
+			TestEqual(TEXT("Rejected input preserves the current phase"), Attack.GetState(), Phase);
+			TestEqual(TEXT("Rejected input does not change hit permission"), Attack.CanRegisterHits(), Phase == EMeleeState::Active);
+		}
+	}
+	TestTrue(TEXT("Recovery still completes after input spam"), Attack.TryEndRecovery());
+	TestTrue(TEXT("A fresh press after completion starts another swing"), Attack.TryStartAttack());
+	TestEqual(TEXT("The next swing starts in wind-up"), Attack.GetState(), EMeleeState::WindUp);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMeleeAttackRestartAfterInterruptionTest,
+	"AshenStep.MeleeAttack.Model.RestartAfterInterruptionInEveryPhase",
+	AshenStep::MeleeAttackTests::TestFlags)
+
+bool FMeleeAttackRestartAfterInterruptionTest::RunTest(const FString& Parameters)
+{
+	const EMeleeState BusyPhases[] = { EMeleeState::WindUp, EMeleeState::Active, EMeleeState::Recovery };
+	for (const EMeleeState Phase : BusyPhases)
+	{
+		FMeleeAttackModel Attack;
+		Attack.TryStartAttack();
+		if (Phase != EMeleeState::WindUp) { Attack.TryAttack(); }
+		if (Phase == EMeleeState::Recovery) { Attack.TryEndAttack(); }
+		TestEqual(TEXT("Arrange the intended interruption phase"), Attack.GetState(), Phase);
+
+		TestTrue(TEXT("Interrupt reports ending an attack"), Attack.Interrupt());
+		TestEqual(TEXT("Interruption immediately returns to ready"), Attack.GetState(), EMeleeState::Ready);
+		TestFalse(TEXT("Interruption immediately disables hits"), Attack.CanRegisterHits());
+		TestTrue(TEXT("Interruption permits a fresh attack"), Attack.CanStartAttack());
+		TestFalse(TEXT("Duplicate cleanup reports no remaining attack"), Attack.Interrupt());
+		TestEqual(TEXT("Duplicate cleanup preserves ready"), Attack.GetState(), EMeleeState::Ready);
+		TestFalse(TEXT("A late close signal while idle is harmless"), Attack.TryEndAttack());
+		TestFalse(TEXT("A late completion signal while idle is harmless"), Attack.TryEndRecovery());
+
+		TestTrue(TEXT("A new press is accepted after cleanup"), Attack.TryStartAttack());
+		TestFalse(TEXT("The new wind-up does not inherit an active hit window"), Attack.CanRegisterHits());
+		TestTrue(TEXT("The new swing can open its window"), Attack.TryAttack());
+		TestTrue(TEXT("The new swing can close its window"), Attack.TryEndAttack());
+		TestTrue(TEXT("The new swing can complete normally"), Attack.TryEndRecovery());
+	}
+	return true;
+}
+
 #endif

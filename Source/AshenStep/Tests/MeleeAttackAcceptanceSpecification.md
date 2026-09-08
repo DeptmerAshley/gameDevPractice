@@ -2,6 +2,9 @@
 
 These scenarios define the remaining black-box integration and functional tests. They are intentionally expressed in terms of observable gameplay behavior rather than component internals. Convert each scenario into an automated map-backed test when its required animation and test assets exist.
 
+For Phase 3's executable component tests, expected API vocabulary, and detailed
+input/montage acceptance steps, see [the Phase 3 TDD guide](../../../docs/day6-phase3-tdd.md).
+
 ## Input and montage lifecycle
 
 - Given a living player with a valid configured attack, one attack input starts the configured montage and enters wind-up.
