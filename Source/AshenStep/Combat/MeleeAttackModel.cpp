@@ -69,7 +69,7 @@ bool FMeleeAttackModel::TryEndRecovery()
 	return false;
 }
 
-bool FMeleeAttackModel::EndAttackEarly()
+bool FMeleeAttackModel::Interrupt()
 {
 	if (GetState() != EMeleeState::Ready)
 	{
