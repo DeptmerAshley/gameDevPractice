@@ -23,7 +23,7 @@ public:
 	float MontagePlayRate = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage", meta = (ClampMin = "0.0"))
-	float DamageAmount = 25.0f;
+	float DamageAmount = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	EDamageType DamageType = EDamageType::None;
@@ -36,4 +36,19 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace")
 	FName TraceEndSocket = TEXT("weapon_tip");
+
+	bool IsValid() const
+	{
+		if (AttackMontage == nullptr ||
+			MontagePlayRate <= 0 ||
+			DamageAmount <= 0 ||
+			TraceRadius <= 0 ||
+			TraceStartSocket.IsNone() ||
+			TraceEndSocket.IsNone()
+			)
+		{
+			return false;
+		}
+		return true;
+	}
 };
