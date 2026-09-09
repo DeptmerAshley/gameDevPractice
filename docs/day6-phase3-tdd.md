@@ -14,7 +14,7 @@ before interpreting compiler failures as missing gameplay behavior.
 The new component test file is intentionally compile-red until these operations
 exist on `UMeleeAttackComponent`:
 
-- `RequestAttack()` returns whether a request actually starts an attack.
+- `RequestMelee()` returns whether a request actually starts an attack.
 - `GetState()` is a const query returning `EMeleeState`.
 - `CanRegisterHits()` is a const query reporting hit permission.
 - One reflected, editable `FMeleeAttackData` property supplies the component's

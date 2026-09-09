@@ -19,7 +19,7 @@
 #include "UObject/UnrealType.h"
 
 // TDD contract and asset-dependent follow-up cases: docs/day6-phase3-tdd.md.
-// RequestAttack(), GetState(), and CanRegisterHits() are expected component APIs,
+// RequestMelee(), GetState(), and CanRegisterHits() are expected component APIs,
 // not test-side implementations of the combat rules.
 namespace AshenStep::MeleeComponentTests
 {
@@ -163,7 +163,7 @@ bool FMeleeComponentUnconfiguredRequestTest::RunTest(const FString& Parameters)
 	const float HealthBefore = Health->GetCurrentHealth();
 	for (int32 Press = 0; Press < 5; ++Press)
 	{
-		TestFalse(TEXT("An unconfigured attack request is rejected"), Attack->RequestAttack());
+		TestFalse(TEXT("An unconfigured attack request is rejected"), Attack->RequestMelee());
 		AssertReadyWithoutHits(*this, *Attack);
 	}
 	TestEqual(TEXT("Rejected requests do not change attacker health"), Health->GetCurrentHealth(), HealthBefore);
@@ -201,7 +201,7 @@ bool FMeleeComponentMissingAnimationTest::RunTest(const FString& Parameters)
 	TestNull(TEXT("Bare character has no animation instance"), Character->GetMesh()->GetAnimInstance());
 	for (int32 Press = 0; Press < 3; ++Press)
 	{
-		TestFalse(TEXT("Unavailable animation rejects the request"), Attack->RequestAttack());
+		TestFalse(TEXT("Unavailable animation rejects the request"), Attack->RequestMelee());
 		AssertReadyWithoutHits(*this, *Attack);
 	}
 	return true;
@@ -217,7 +217,7 @@ bool FMeleeComponentNoOwnerTest::RunTest(const FString& Parameters)
 	using namespace AshenStep::MeleeComponentTests;
 	TStrongObjectPtr<UMeleeAttackComponent> Attack(NewObject<UMeleeAttackComponent>());
 	TestNull(TEXT("Fixture deliberately has no owner"), Attack->GetOwner());
-	TestFalse(TEXT("Ownerless request is rejected without dereferencing an actor"), Attack->RequestAttack());
+	TestFalse(TEXT("Ownerless request is rejected without dereferencing an actor"), Attack->RequestMelee());
 	AssertReadyWithoutHits(*this, *Attack);
 	return true;
 }
