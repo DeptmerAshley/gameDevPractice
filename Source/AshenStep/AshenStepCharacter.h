@@ -13,7 +13,7 @@ class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UDashComponent;
-class UMeleeAttackComponet;
+class UMeleeAttackComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
