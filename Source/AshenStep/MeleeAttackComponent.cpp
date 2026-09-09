@@ -75,3 +75,17 @@ bool UMeleeAttackComponent::RequestMelee()
 
 	return bMeleeStatus;
 }
+
+EMeleeState UMeleeAttackComponent::GetState() const
+{
+	return MeleeAttackModel.GetState();
+}
+
+bool UMeleeAttackComponent::CanRegisterHits() const
+{
+	if (GetState() == EMeleeState::Active)
+	{
+		return true;
+	}
+	return false;
+}
