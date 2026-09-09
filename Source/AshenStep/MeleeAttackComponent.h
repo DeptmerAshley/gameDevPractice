@@ -22,7 +22,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Melee", meta = (AllowPrivateAccess = "true"))
 	FMeleeAttackData MeleeAttackData;
+
 	FMeleeAttackModel MeleeAttackModel;
 
 public:	
@@ -30,5 +32,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	bool RequestMelee();
-
+	bool GetState() const;
+	bool CanRegisterHits() const;
 };

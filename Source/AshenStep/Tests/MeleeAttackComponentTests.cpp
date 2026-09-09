@@ -10,7 +10,7 @@
 #include "Combat/MeleeAttackModel.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Engine.h"
-#include "Engine/URL.h"
+#include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
 #include "HealthComponent.h"
 #include "MeleeAttackComponent.h"

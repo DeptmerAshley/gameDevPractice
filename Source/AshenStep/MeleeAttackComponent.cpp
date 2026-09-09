@@ -3,6 +3,8 @@
 
 #include "MeleeAttackComponent.h"
 #include "HealthComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties
 UMeleeAttackComponent::UMeleeAttackComponent()
@@ -52,6 +54,18 @@ bool UMeleeAttackComponent::RequestMelee()
 		return false;
 	}
 
+	USkeletalMeshComponent* OwnerSkeleton = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
+	if (!OwnerSkeleton)
+	{
+		return false;
+	}
+
+	UAnimInstance* OwnerAnim = OwnerSkeleton->GetAnimInstance();
+	if (!OwnerAnim)
+	{
+		return false;
+	}
+
 	if (MeleeAttackData.IsValid() == false)
 	{
 		return false;
@@ -61,4 +75,3 @@ bool UMeleeAttackComponent::RequestMelee()
 
 	return bMeleeStatus;
 }
-
