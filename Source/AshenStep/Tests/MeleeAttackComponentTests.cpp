@@ -14,6 +14,7 @@
 #include "Engine/World.h"
 #include "HealthComponent.h"
 #include "MeleeAttackComponent.h"
+#include "Tests/MeleeAttackTestCharacter.h"
 #include "UObject/StrongObjectPtr.h"
 #include "UObject/UnrealType.h"
 
@@ -58,7 +59,7 @@ public:
 		}
 		FActorSpawnParameters Parameters;
 		Parameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		return World->SpawnActor<AAshenStepCharacter>(FVector::ZeroVector, FRotator::ZeroRotator, Parameters);
+		return World->SpawnActor<AMeleeAttackTestCharacter>(FVector::ZeroVector, FRotator::ZeroRotator, Parameters);
 	}
 
 private:

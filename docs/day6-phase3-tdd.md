@@ -47,6 +47,9 @@ Run `AshenStep.MeleeAttack.Phase3.Component`:
 The fixture creates and destroys a private transient world. It does not use or
 replace `GWorld`, alter the open editor level, or modify class defaults. It dispatches
 actor BeginPlay so health initialization and component subscriptions are exercised.
+Because `AAshenStepCharacter` is abstract, the fixture spawns the concrete
+`AMeleeAttackTestCharacter` subclass. It inherits gameplay behavior unchanged and
+adds no mesh, animation assets, or simulated combat logic.
 World lifecycle APIs are documented in [Epic's UWorld reference](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Engine/UWorld).
 
 Run `AshenStep.MeleeAttack.Model` for the two additional rule-level tests:
