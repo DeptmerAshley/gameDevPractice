@@ -55,6 +55,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* DashAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* MeleeAttackAction;
+
 public:
 
 	/** Constructor */
@@ -75,6 +78,9 @@ protected:
 
 	// Call dash when input begins
 	void Dash();
+
+	// Call Melee when input begins
+	void Melee();
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);

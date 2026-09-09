@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Combat/MeleeAttackModel.h"
 #include "MeleeAttackComponent.generated.h"
 
 
@@ -19,6 +20,8 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	FMeleeAttackModel MeleeAttackModel;
 
 public:	
 	// Called every frame

@@ -32,3 +32,23 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
+void UMeleeAttackComponent::RequestMelee()
+{
+	bool bMeleeStatus = MeleeAttackModel.TryStartAttack();
+
+	if (bMeleeStatus)
+	{
+		bMeleeStatus = MeleeAttackModel.TryAttack();
+	}
+
+	if (bMeleeStatus)
+	{
+		bMeleeStatus = MeleeAttackModel.TryEndAttack();
+	}
+
+	if (bMeleeStatus)
+	{
+		bMeleeStatus = MeleeAttackModel.TryEndRecovery();
+	}
+}
+

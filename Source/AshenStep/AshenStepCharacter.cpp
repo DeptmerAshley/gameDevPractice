@@ -77,6 +77,9 @@ void AAshenStepCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AAshenStepCharacter::Dash);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AAshenStepCharacter::StopMoveInput);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AAshenStepCharacter::StopMoveInput);
+
+		// Attacks
+		EnhancedInputComponent->BindAction(MeleeAttackAction, ETriggerEvent::Started, this, &AAshenStepCharacter::Melee);
 	}
 	else
 	{
@@ -119,6 +122,23 @@ void AAshenStepCharacter::Dash()
 		Log,
 		TEXT("Dash request: %s"),
 		bDashStarted ? TEXT("accepted") : TEXT("rejected")
+	);
+}
+
+void AAshenStepCharacter::Melee()
+{
+	if (!MeleeAttackComponent)
+	{
+		return;
+	}
+
+	const bool bMeleeStarted = MeleeAttackComponent->RequestMelee();
+
+	UE_LOG(
+		LogAshenStep,
+		Log,
+		TEXT("Melee request: %s"),
+		bMeleeStarted ? TEXT("accepted") : TEXT("rejected")
 	);
 }
 
