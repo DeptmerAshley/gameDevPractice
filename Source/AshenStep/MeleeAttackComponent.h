@@ -36,4 +36,10 @@ public:
 	bool CanRegisterHits() const;
 
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION(BlueprintCallable, Category = "Melee")
+	bool BeginAttackWindow();
+
+	UFUNCTION(BlueprintCallable, Category = "Melee")
+	bool EndAttackWindow();
 };

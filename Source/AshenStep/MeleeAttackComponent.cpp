@@ -130,3 +130,13 @@ void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bIn
 		MeleeAttackModel.Interrupt();
 	}
 }
+
+bool UMeleeAttackComponent::BeginAttackWindow()
+{
+	return MeleeAttackModel.TryAttack();
+}
+
+bool UMeleeAttackComponent::EndAttackWindow()
+{
+	return MeleeAttackModel.TryEndAttack();
+}
