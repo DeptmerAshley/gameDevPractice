@@ -34,4 +34,6 @@ public:
 	bool RequestMelee();
 	EMeleeState GetState() const;
 	bool CanRegisterHits() const;
+
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };
