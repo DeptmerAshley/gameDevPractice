@@ -73,6 +73,23 @@ bool UMeleeAttackComponent::RequestMelee()
 
 	bool bMeleeStatus = MeleeAttackModel.TryStartAttack();
 
+	if (!bMeleeStatus)
+	{
+		return false;
+	}
+
+	float MontageLength = OwnerAnim->Montage_Play(MeleeAttackData.AttackMontage, MeleeAttackData.MontagePlayRate);
+
+	if (MontageLength == 0.0f)
+	{
+		MeleeAttackModel.Interrupt();
+		return false;
+	}
+
+	FOnMontageEnded MontageEnded;
+	MontageEnded.BindUObject(this, &UMeleeAttackComponent::OnAttackMontageEnded);
+
+	OwnerAnim->Montage_SetEndDelegate(MontageEnded, MeleeAttackData.AttackMontage);
 	return bMeleeStatus;
 }
 
@@ -88,4 +105,28 @@ bool UMeleeAttackComponent::CanRegisterHits() const
 		return true;
 	}
 	return false;
+}
+
+void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+
+	if (Montage != MeleeAttackData.AttackMontage)
+	{
+		return;
+	}
+
+	if (bInterrupted)
+	{
+		MeleeAttackModel.Interrupt();
+		return;
+	}
+
+	if (MeleeAttackModel.GetState() == EMeleeState::Recovery)
+	{
+		MeleeAttackModel.TryEndRecovery();
+	}
+	else
+	{
+		MeleeAttackModel.Interrupt();
+	}
 }
