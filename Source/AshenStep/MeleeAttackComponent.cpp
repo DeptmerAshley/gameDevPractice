@@ -2,6 +2,7 @@
 
 
 #include "MeleeAttackComponent.h"
+#include "HealthComponent.h"
 
 // Sets default values for this component's properties
 UMeleeAttackComponent::UMeleeAttackComponent()
@@ -32,23 +33,32 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
-void UMeleeAttackComponent::RequestMelee()
+bool UMeleeAttackComponent::RequestMelee()
 {
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor)
+	{
+		return false;
+	}
+
+	UHealthComponent* OwnerHealthComponent = OwnerActor->FindComponentByClass<UHealthComponent>();
+	if (!OwnerHealthComponent)
+	{
+		return false;
+	}
+
+	if (OwnerHealthComponent->IsAlive() == false)
+	{
+		return false;
+	}
+
+	if (MeleeAttackData.IsValid() == false)
+	{
+		return false;
+	}
+
 	bool bMeleeStatus = MeleeAttackModel.TryStartAttack();
 
-	if (bMeleeStatus)
-	{
-		bMeleeStatus = MeleeAttackModel.TryAttack();
-	}
-
-	if (bMeleeStatus)
-	{
-		bMeleeStatus = MeleeAttackModel.TryEndAttack();
-	}
-
-	if (bMeleeStatus)
-	{
-		bMeleeStatus = MeleeAttackModel.TryEndRecovery();
-	}
+	return bMeleeStatus;
 }
 
