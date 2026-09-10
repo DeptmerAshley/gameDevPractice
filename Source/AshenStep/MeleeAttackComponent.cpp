@@ -5,6 +5,7 @@
 #include "AshenStep.h"
 #include "HealthComponent.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -64,46 +65,69 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 	if (!CanRegisterHits())
 	{
+		bInitPositions = false;
+		bReportedPositionFailure = false;
 		return;
 	}
 
-	AActor* OwnerActor = GetOwner();
-	if (!OwnerActor)
+	// Report once per failure episode, and never bridge a gap in valid samples.
+	const auto RejectPositionSample = [this](const TCHAR* Reason)
 	{
-		UE_LOG(LogAshenStep, Log, TEXT("[Melee] TickComponent rejected: missing owner"));
+		bInitPositions = false;
+		if (!bReportedPositionFailure)
+		{
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | Position sampling paused: %s"),
+				*GetNameSafe(GetOwner()), Reason);
+			bReportedPositionFailure = true;
+		}
+	};
+
+	AActor* OwnerActor = GetOwner();
+	if (!IsValid(OwnerActor))
+	{
+		RejectPositionSample(TEXT("missing owner"));
 		return;
 	}
 
 	USkeletalMeshComponent* OwnerSkeleton = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
-	if (!OwnerSkeleton)
+	if (!IsValid(OwnerSkeleton))
 	{
-		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | TickComponent rejected: missing skeletal mesh"), *GetNameSafe(OwnerActor));
+		RejectPositionSample(TEXT("missing skeletal mesh"));
 		return;
 	}
 
 	if (OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceStartSocket) == false || OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceEndSocket) == false)
 	{
-		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | TickComponent rejected: missing skeletal socket"), *GetNameSafe(OwnerActor));
+		RejectPositionSample(TEXT("missing skeletal socket"));
 		return;
 	}
 
-	FVector WeaponBaseStart = LastWeaponBaseLoc;
-	FVector WeaponTipStart = LastWeaponTipLoc;
-
-	FVector WeaponBaseEnd;
-	FVector WeaponTipEnd;
-
-	if (bInitPositions)
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
 	{
-		FVector WeaponBaseEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
-		FVector WeaponTipEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+		RejectPositionSample(TEXT("missing world"));
+		return;
 	}
 
-	if (GetState() == EMeleeState::Active)
+	const FVector WeaponBaseEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
+	const FVector WeaponTipEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+	bReportedPositionFailure = false;
+
+	if (!bInitPositions)
 	{
-		DrawDebugSphere(GetWorld(), WeaponBaseStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
-		DrawDebugSphere(GetWorld(), WeaponTipStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
-		DrawDebugLine(GetWorld(), WeaponBaseStart, WeaponBaseStart, FColor::Yellow, false, 0.0f, 0, 1.0f);
+		LastWeaponBaseLoc = WeaponBaseEnd;
+		LastWeaponTipLoc = WeaponTipEnd;
+		bInitPositions = true;
+		return; // Seed history; do not sweep from stale or uninitialized positions.
+	}
+
+	// Future sweeps belong here: LastWeaponBaseLoc/LastWeaponTipLoc -> current endpoints.
+	// Keep sampling and history updates independent of the visualization toggle.
+	if (bDrawMeleeDebug)
+	{
+		DrawDebugSphere(World, WeaponBaseEnd, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+		DrawDebugSphere(World, WeaponTipEnd, MeleeAttackData.TraceRadius, 12, FColor::Red, false, 0.0f, 0, 1.0f);
+		DrawDebugLine(World, WeaponBaseEnd, WeaponTipEnd, FColor::Yellow, false, 0.0f, 0, 1.0f);
 	}
 
 	LastWeaponBaseLoc = WeaponBaseEnd;
@@ -167,6 +191,8 @@ bool UMeleeAttackComponent::RequestMelee()
 		return false;
 	}
 
+	bInitPositions = false;
+	bReportedPositionFailure = false;
 	float MontageLength = OwnerAnim->Montage_Play(MeleeAttackData.AttackMontage, MeleeAttackData.MontagePlayRate);
 
 	if (MontageLength == 0.0f)
@@ -175,6 +201,7 @@ bool UMeleeAttackComponent::RequestMelee()
 			*GetNameSafe(OwnerActor), *GetNameSafe(MeleeAttackData.AttackMontage.Get()), MeleeAttackData.MontagePlayRate);
 		const EMeleeState StateBeforeReset = MeleeAttackModel.GetState();
 		MeleeAttackModel.Interrupt();
+		bInitPositions = false;
 		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | Playback failure cleanup | %s -> %s"),
 			*GetNameSafe(OwnerActor), MeleeStateName(StateBeforeReset), MeleeStateName(MeleeAttackModel.GetState()));
 		return false;
@@ -213,6 +240,8 @@ void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bIn
 		return;
 	}
 
+	bInitPositions = false;
+	bReportedPositionFailure = false;
 	const EMeleeState StateBeforeCleanup = MeleeAttackModel.GetState();
 	if (bInterrupted)
 	{
@@ -239,14 +268,14 @@ void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bIn
 bool UMeleeAttackComponent::BeginAttackWindow()
 {
 	AActor* OwnerActor = GetOwner();
-	if (!OwnerActor)
+	if (!IsValid(OwnerActor))
 	{
 		UE_LOG(LogAshenStep, Log, TEXT("[Melee] BeginAttackWindow rejected: missing owner"));
 		return false;
 	}
 
 	USkeletalMeshComponent* OwnerSkeleton = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
-	if (!OwnerSkeleton)
+	if (!IsValid(OwnerSkeleton))
 	{
 		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | BeginAttackWindow rejected: missing skeletal mesh"), *GetNameSafe(OwnerActor));
 		return false;
@@ -267,6 +296,7 @@ bool UMeleeAttackComponent::BeginAttackWindow()
 		LastWeaponBaseLoc = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
 		LastWeaponTipLoc = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
 		bInitPositions = true;
+		bReportedPositionFailure = false;
 	}
 
 	return bAccepted;
@@ -277,5 +307,10 @@ bool UMeleeAttackComponent::EndAttackWindow()
 	const EMeleeState StateBefore = MeleeAttackModel.GetState();
 	const bool bAccepted = MeleeAttackModel.TryEndAttack();
 	LogMeleeTransition(GetOwner(), TEXT("EndAttackWindow"), bAccepted, StateBefore, MeleeAttackModel);
+	if (bAccepted)
+	{
+		bInitPositions = false;
+		bReportedPositionFailure = false;
+	}
 	return bAccepted;
 }

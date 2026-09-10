@@ -26,6 +26,7 @@ protected:
 	FMeleeAttackData MeleeAttackData;
 
 	FMeleeAttackModel MeleeAttackModel;
+	bool bReportedPositionFailure = false;
 
 public:	
 	// Called every frame
@@ -46,7 +47,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Melee|Debug")
 	bool bDrawMeleeDebug = false;
 
-	FVector LastWeaponBaseLoc;
-	FVector LastWeaponTipLoc;
+	FVector LastWeaponBaseLoc = FVector::ZeroVector;
+	FVector LastWeaponTipLoc = FVector::ZeroVector;
 	bool bInitPositions = false;
 };
