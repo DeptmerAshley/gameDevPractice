@@ -90,8 +90,11 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	FVector WeaponBaseStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
 	FVector WeaponTipStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
 
-	DrawDebugSphere(GetWorld(), WeaponBaseStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
-	DrawDebugSphere(GetWorld(), WeaponTipStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+	if (GetState() == EMeleeState::Active)
+	{
+		DrawDebugSphere(GetWorld(), WeaponBaseStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+		DrawDebugSphere(GetWorld(), WeaponTipStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+	}
 }
 
 bool UMeleeAttackComponent::RequestMelee()
