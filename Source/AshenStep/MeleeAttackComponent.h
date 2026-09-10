@@ -45,4 +45,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Melee|Debug")
 	bool bDrawMeleeDebug = false;
+
+	FVector LastWeaponBaseLoc;
+	FVector LastWeaponTipLoc;
+	bool bInitPositions = false;
 };

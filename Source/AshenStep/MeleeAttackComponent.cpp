@@ -87,14 +87,27 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		return;
 	}
 
-	FVector WeaponBaseStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
-	FVector WeaponTipStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+	FVector WeaponBaseStart = LastWeaponBaseLoc;
+	FVector WeaponTipStart = LastWeaponTipLoc;
+
+	FVector WeaponBaseEnd;
+	FVector WeaponTipEnd;
+
+	if (bInitPositions)
+	{
+		FVector WeaponBaseEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
+		FVector WeaponTipEnd = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+	}
 
 	if (GetState() == EMeleeState::Active)
 	{
 		DrawDebugSphere(GetWorld(), WeaponBaseStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
 		DrawDebugSphere(GetWorld(), WeaponTipStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+		DrawDebugLine(GetWorld(), WeaponBaseStart, WeaponBaseStart, FColor::Yellow, false, 0.0f, 0, 1.0f);
 	}
+
+	LastWeaponBaseLoc = WeaponBaseEnd;
+	LastWeaponTipLoc = WeaponTipEnd;
 }
 
 bool UMeleeAttackComponent::RequestMelee()
@@ -225,9 +238,37 @@ void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bIn
 
 bool UMeleeAttackComponent::BeginAttackWindow()
 {
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] BeginAttackWindow rejected: missing owner"));
+		return false;
+	}
+
+	USkeletalMeshComponent* OwnerSkeleton = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
+	if (!OwnerSkeleton)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | BeginAttackWindow rejected: missing skeletal mesh"), *GetNameSafe(OwnerActor));
+		return false;
+	}
+
+	if (OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceStartSocket) == false || OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceEndSocket) == false)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | BeginAttackWindow rejected: missing skeletal socket"), *GetNameSafe(OwnerActor));
+		return false;
+	}
+
 	const EMeleeState StateBefore = MeleeAttackModel.GetState();
 	const bool bAccepted = MeleeAttackModel.TryAttack();
 	LogMeleeTransition(GetOwner(), TEXT("BeginAttackWindow"), bAccepted, StateBefore, MeleeAttackModel);
+
+	if (bAccepted)
+	{
+		LastWeaponBaseLoc = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
+		LastWeaponTipLoc = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+		bInitPositions = true;
+	}
+
 	return bAccepted;
 }
 
