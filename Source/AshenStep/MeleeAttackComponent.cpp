@@ -11,6 +11,7 @@
 #include "Animation/AnimMontage.h"
 #include "DrawDebugHelpers.h"
 #include "CollisionShape.h"
+#include "CollisionQueryParams.h"
 
 namespace
 {
@@ -145,7 +146,32 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		AActor* HitActor = Result.GetActor();
 		if (IsValid(HitActor))
 		{
-			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Detected: %s"), *GetNameSafe(HitActor));
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Tip Detected: %s"), *GetNameSafe(HitActor));
+		}
+	}
+
+	World->SweepMultiByChannel(HitResults, LastWeaponBaseLoc, WeaponBaseEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
+
+	for (const FHitResult& Result : HitResults)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (IsValid(HitActor))
+		{
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Base Detected: %s"), *GetNameSafe(HitActor));
+		}
+	}
+
+	FVector MidPointLoc = (LastWeaponBaseLoc + LastWeaponTipLoc) * 0.5f;
+	FVector MidPointEnd = (WeaponBaseEnd + WeaponTipEnd) * 0.5f;
+
+	World->SweepMultiByChannel(HitResults, MidPointLoc, MidPointEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
+
+	for (const FHitResult& Result : HitResults)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (IsValid(HitActor))
+		{
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Midpoint Detected: %s"), *GetNameSafe(HitActor));
 		}
 	}
 
