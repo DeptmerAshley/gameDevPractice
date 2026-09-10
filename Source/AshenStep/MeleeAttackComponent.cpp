@@ -10,6 +10,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "DrawDebugHelpers.h"
+#include "CollisionShape.h"
 
 namespace
 {
@@ -128,6 +129,24 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		DrawDebugSphere(World, WeaponBaseEnd, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
 		DrawDebugSphere(World, WeaponTipEnd, MeleeAttackData.TraceRadius, 12, FColor::Red, false, 0.0f, 0, 1.0f);
 		DrawDebugLine(World, WeaponBaseEnd, WeaponTipEnd, FColor::Yellow, false, 0.0f, 0, 1.0f);
+	}
+
+	FCollisionShape MeleeCollision =  FCollisionShape::MakeSphere(MeleeAttackData.TraceRadius);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(OwnerActor);
+
+	TArray<FHitResult> HitResults;
+
+	if (World->SweepMultiByChannel(HitResults, LastWeaponTipLoc, WeaponTipEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams));
+
+	for (const FHitResult& Result : HitResults)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (IsValid(HitActor))
+		{
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Detected: %s"), *GetNameSafe(HitActor));
+		}
 	}
 
 	LastWeaponBaseLoc = WeaponBaseEnd;
