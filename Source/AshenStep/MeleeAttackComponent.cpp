@@ -155,7 +155,7 @@ void UMeleeAttackComponent::DrawWeaponDebug(UWorld* World, const FVector& BasePo
 }
 
 void UMeleeAttackComponent::SweepWeaponSample(UWorld* World, const FVector& Start, const FVector& End,
-	const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName) const
+	const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName)
 {
 	TArray<FHitResult> HitResults;
 	World->SweepMultiByChannel(HitResults, Start, End, FQuat::Identity, ECC_Visibility, Shape, QueryParams);
@@ -164,8 +164,9 @@ void UMeleeAttackComponent::SweepWeaponSample(UWorld* World, const FVector& Star
 	for (const FHitResult& Result : HitResults)
 	{
 		AActor* HitActor = Result.GetActor();
-		if (IsValid(HitActor))
+		if (IsValid(HitActor) && !ActorsHit.Contains(HitActor))
 		{
+			ActorsHit.Add(HitActor);
 			UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s Detected: %s"), SampleName, *GetNameSafe(HitActor));
 		}
 	}
@@ -227,6 +228,8 @@ bool UMeleeAttackComponent::RequestMelee()
 	{
 		return false;
 	}
+
+	ActorsHit.Reset();
 
 	bInitPositions = false;
 	bReportedPositionFailure = false;

@@ -52,10 +52,12 @@ public:
 private:
 	void DrawWeaponDebug(UWorld* World, const FVector& BasePosition, const FVector& TipPosition) const;
 	void SweepWeaponSample(UWorld* World, const FVector& Start, const FVector& End,
-		const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName) const;
+		const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName);
 
 	FVector LastWeaponBaseLoc = FVector::ZeroVector;
 	FVector LastWeaponTipLoc = FVector::ZeroVector;
 	bool bInitPositions = false;
 	bool bReportedPositionFailure = false;
+
+	TArray<AActor*> ActorsHit;
 };
