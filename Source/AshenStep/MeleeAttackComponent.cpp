@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "DrawDebugHelpers.h"
 
 namespace
 {
@@ -65,6 +66,32 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	{
 		return;
 	}
+
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] TickComponent rejected: missing owner"));
+		return;
+	}
+
+	USkeletalMeshComponent* OwnerSkeleton = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
+	if (!OwnerSkeleton)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | TickComponent rejected: missing skeletal mesh"), *GetNameSafe(OwnerActor));
+		return;
+	}
+
+	if (OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceStartSocket) == false || OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceEndSocket) == false)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | TickComponent rejected: missing skeletal socket"), *GetNameSafe(OwnerActor));
+		return;
+	}
+
+	FVector WeaponBaseStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceStartSocket);
+	FVector WeaponTipStart = OwnerSkeleton->GetSocketLocation(MeleeAttackData.TraceEndSocket);
+
+	DrawDebugSphere(GetWorld(), WeaponBaseStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+	DrawDebugSphere(GetWorld(), WeaponTipStart, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
 }
 
 bool UMeleeAttackComponent::RequestMelee()

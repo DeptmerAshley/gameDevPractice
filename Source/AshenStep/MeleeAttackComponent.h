@@ -42,4 +42,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Melee")
 	bool EndAttackWindow();
+
+	UPROPERTY(EditAnywhere, Category = "Melee|Debug")
+	bool bDrawMeleeDebug = false;
 };
