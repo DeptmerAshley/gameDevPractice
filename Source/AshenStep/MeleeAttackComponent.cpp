@@ -138,7 +138,7 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 	TArray<FHitResult> HitResults;
 
-	if (World->SweepMultiByChannel(HitResults, LastWeaponTipLoc, WeaponTipEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams));
+	World->SweepMultiByChannel(HitResults, LastWeaponTipLoc, WeaponTipEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
 
 	for (const FHitResult& Result : HitResults)
 	{
