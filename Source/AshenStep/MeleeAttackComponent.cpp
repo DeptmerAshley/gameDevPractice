@@ -166,7 +166,22 @@ void UMeleeAttackComponent::SweepWeaponSample(UWorld* World, const FVector& Star
 		AActor* HitActor = Result.GetActor();
 		if (IsValid(HitActor) && !ActorsHit.Contains(HitActor))
 		{
+			UHealthComponent* ActorHealth = HitActor->FindComponentByClass<UHealthComponent>();
+			if (IsValid(ActorHealth) || !ActorHealth->IsAlive())
+			{
+				continue;
+			}
+
+			FDamageContext MeleeDamageContext;
+			MeleeDamageContext.DamageAmount = MeleeAttackData.DamageAmount;
+			MeleeDamageContext.DamageInstigator = GetOwner();
+			MeleeDamageContext.DamageSource = GetOwner();
+			MeleeDamageContext.DamageType = MeleeAttackData.DamageType;
+			MeleeDamageContext.DamageHitLocation = Result.ImpactPoint;
+
 			ActorsHit.Add(HitActor);
+			float DamageAmount = ActorHealth->ApplyDamage(MeleeDamageContext);
+
 			UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s Detected: %s"), SampleName, *GetNameSafe(HitActor));
 		}
 	}
