@@ -32,10 +32,10 @@ public:
 	float TraceRadius = 12.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace")
-	FName TraceStartSocket = TEXT("weapon_base");
+	FName TraceStartSocket = TEXT("weapon_baseR");
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace")
-	FName TraceEndSocket = TEXT("weapon_tip");
+	FName TraceEndSocket = TEXT("weapon_tipR");
 
 	bool IsValid() const
 	{

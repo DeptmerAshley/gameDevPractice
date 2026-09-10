@@ -61,7 +61,10 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (!CanRegisterHits())
+	{
+		return;
+	}
 }
 
 bool UMeleeAttackComponent::RequestMelee()
@@ -90,6 +93,12 @@ bool UMeleeAttackComponent::RequestMelee()
 	if (!OwnerSkeleton)
 	{
 		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | RequestMelee rejected: missing skeletal mesh"), *GetNameSafe(OwnerActor));
+		return false;
+	}
+
+	if (OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceStartSocket) == false || OwnerSkeleton->DoesSocketExist(MeleeAttackData.TraceEndSocket) == false)
+	{
+		UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s | RequestMelee rejected: missing skeletal socket"), *GetNameSafe(OwnerActor));
 		return false;
 	}
 
