@@ -27,7 +27,7 @@ namespace
 		}
 	}
 
-	// Event-only diagnostics: never log from TickComponent or state queries.
+	// State transitions are logged at their event handlers, not on every tick.
 	void LogMeleeTransition(const AActor* Owner, const TCHAR* Event, bool bAccepted,
 		EMeleeState Before, const FMeleeAttackModel& Model)
 	{
@@ -123,60 +123,52 @@ void UMeleeAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		return; // Seed history; do not sweep from stale or uninitialized positions.
 	}
 
-	// Future sweeps belong here: LastWeaponBaseLoc/LastWeaponTipLoc -> current endpoints.
-	// Keep sampling and history updates independent of the visualization toggle.
-	if (bDrawMeleeDebug)
-	{
-		DrawDebugSphere(World, WeaponBaseEnd, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
-		DrawDebugSphere(World, WeaponTipEnd, MeleeAttackData.TraceRadius, 12, FColor::Red, false, 0.0f, 0, 1.0f);
-		DrawDebugLine(World, WeaponBaseEnd, WeaponTipEnd, FColor::Yellow, false, 0.0f, 0, 1.0f);
-	}
+	DrawWeaponDebug(World, WeaponBaseEnd, WeaponTipEnd);
 
-	FCollisionShape MeleeCollision =  FCollisionShape::MakeSphere(MeleeAttackData.TraceRadius);
+	const FCollisionShape MeleeCollision = FCollisionShape::MakeSphere(MeleeAttackData.TraceRadius);
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(OwnerActor);
 
-	TArray<FHitResult> HitResults;
+	const FVector MidPointStart = (LastWeaponBaseLoc + LastWeaponTipLoc) * 0.5f;
+	const FVector MidPointEnd = (WeaponBaseEnd + WeaponTipEnd) * 0.5f;
 
-	World->SweepMultiByChannel(HitResults, LastWeaponTipLoc, WeaponTipEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
-
-	for (const FHitResult& Result : HitResults)
-	{
-		AActor* HitActor = Result.GetActor();
-		if (IsValid(HitActor))
-		{
-			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Tip Detected: %s"), *GetNameSafe(HitActor));
-		}
-	}
-
-	World->SweepMultiByChannel(HitResults, LastWeaponBaseLoc, WeaponBaseEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
-
-	for (const FHitResult& Result : HitResults)
-	{
-		AActor* HitActor = Result.GetActor();
-		if (IsValid(HitActor))
-		{
-			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Base Detected: %s"), *GetNameSafe(HitActor));
-		}
-	}
-
-	FVector MidPointLoc = (LastWeaponBaseLoc + LastWeaponTipLoc) * 0.5f;
-	FVector MidPointEnd = (WeaponBaseEnd + WeaponTipEnd) * 0.5f;
-
-	World->SweepMultiByChannel(HitResults, MidPointLoc, MidPointEnd, FQuat::Identity, ECC_Visibility, MeleeCollision, QueryParams);
-
-	for (const FHitResult& Result : HitResults)
-	{
-		AActor* HitActor = Result.GetActor();
-		if (IsValid(HitActor))
-		{
-			UE_LOG(LogAshenStep, Log, TEXT("[Melee] Midpoint Detected: %s"), *GetNameSafe(HitActor));
-		}
-	}
+	// Sweep each sample before advancing history; drawing never controls collision queries.
+	SweepWeaponSample(World, LastWeaponTipLoc, WeaponTipEnd, MeleeCollision, QueryParams, TEXT("Tip"));
+	SweepWeaponSample(World, LastWeaponBaseLoc, WeaponBaseEnd, MeleeCollision, QueryParams, TEXT("Base"));
+	SweepWeaponSample(World, MidPointStart, MidPointEnd, MeleeCollision, QueryParams, TEXT("Midpoint"));
 
 	LastWeaponBaseLoc = WeaponBaseEnd;
 	LastWeaponTipLoc = WeaponTipEnd;
+}
+
+void UMeleeAttackComponent::DrawWeaponDebug(UWorld* World, const FVector& BasePosition, const FVector& TipPosition) const
+{
+	if (!bDrawMeleeDebug)
+	{
+		return;
+	}
+
+	DrawDebugSphere(World, BasePosition, MeleeAttackData.TraceRadius, 12, FColor::Green, false, 0.0f, 0, 1.0f);
+	DrawDebugSphere(World, TipPosition, MeleeAttackData.TraceRadius, 12, FColor::Red, false, 0.0f, 0, 1.0f);
+	DrawDebugLine(World, BasePosition, TipPosition, FColor::Yellow, false, 0.0f, 0, 1.0f);
+}
+
+void UMeleeAttackComponent::SweepWeaponSample(UWorld* World, const FVector& Start, const FVector& End,
+	const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName) const
+{
+	TArray<FHitResult> HitResults;
+	World->SweepMultiByChannel(HitResults, Start, End, FQuat::Identity, ECC_Visibility, Shape, QueryParams);
+
+	// Overlap results can exist even when the sweep reports no blocking hit.
+	for (const FHitResult& Result : HitResults)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (IsValid(HitActor))
+		{
+			UE_LOG(LogAshenStep, Log, TEXT("[Melee] %s Detected: %s"), SampleName, *GetNameSafe(HitActor));
+		}
+	}
 }
 
 bool UMeleeAttackComponent::RequestMelee()
@@ -268,11 +260,7 @@ EMeleeState UMeleeAttackComponent::GetState() const
 
 bool UMeleeAttackComponent::CanRegisterHits() const
 {
-	if (GetState() == EMeleeState::Active)
-	{
-		return true;
-	}
-	return false;
+	return MeleeAttackModel.CanRegisterHits();
 }
 
 void UMeleeAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)

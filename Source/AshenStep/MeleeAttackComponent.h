@@ -8,6 +8,9 @@
 #include "Combat/MeleeAttackData.h"
 #include "MeleeAttackComponent.generated.h"
 
+class UWorld;
+struct FCollisionShape;
+struct FCollisionQueryParams;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ASHENSTEP_API UMeleeAttackComponent : public UActorComponent
@@ -26,7 +29,6 @@ protected:
 	FMeleeAttackData MeleeAttackData;
 
 	FMeleeAttackModel MeleeAttackModel;
-	bool bReportedPositionFailure = false;
 
 public:	
 	// Called every frame
@@ -47,7 +49,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Melee|Debug")
 	bool bDrawMeleeDebug = false;
 
+private:
+	void DrawWeaponDebug(UWorld* World, const FVector& BasePosition, const FVector& TipPosition) const;
+	void SweepWeaponSample(UWorld* World, const FVector& Start, const FVector& End,
+		const FCollisionShape& Shape, const FCollisionQueryParams& QueryParams, const TCHAR* SampleName) const;
+
 	FVector LastWeaponBaseLoc = FVector::ZeroVector;
 	FVector LastWeaponTipLoc = FVector::ZeroVector;
 	bool bInitPositions = false;
+	bool bReportedPositionFailure = false;
 };
