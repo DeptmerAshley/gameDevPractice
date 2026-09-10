@@ -167,7 +167,7 @@ void UMeleeAttackComponent::SweepWeaponSample(UWorld* World, const FVector& Star
 		if (IsValid(HitActor) && !ActorsHit.Contains(HitActor))
 		{
 			UHealthComponent* ActorHealth = HitActor->FindComponentByClass<UHealthComponent>();
-			if (IsValid(ActorHealth) || !ActorHealth->IsAlive())
+			if (!IsValid(ActorHealth) || !ActorHealth->IsAlive())
 			{
 				continue;
 			}
