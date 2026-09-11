@@ -13,6 +13,7 @@ class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UDashComponent;
+class UMeleeAttackComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -54,6 +55,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* DashAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* MeleeAttackAction;
+
 public:
 
 	/** Constructor */
@@ -74,6 +78,9 @@ protected:
 
 	// Call dash when input begins
 	void Dash();
+
+	// Call Melee when input begins
+	void Melee();
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
@@ -114,6 +121,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDashComponent> DashComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UMeleeAttackComponent> MeleeAttackComponent;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	UHealthComponent* GetHealthComponent() const;
@@ -121,4 +131,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Movement")
 	UDashComponent* GetDashComponent() const;
 
+	UFUNCTION(BlueprintPure, Category = "Melee Attack")
+	UMeleeAttackComponent* GetMeleeAttackComponent() const;
 };

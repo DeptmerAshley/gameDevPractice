@@ -106,3 +106,47 @@ The shared health widget originally attempted to read an unassigned health-compo
 ### Next action
 
 Run the complete `AshenStep.Health` automation suite once more, perform the final branch review, and merge Day 5. Then begin Day 6 with one data-driven melee attack using trace-based hit detection and the structured damage contract.
+
+## 2026-09-10 — Day 6: Core Data-Driven Melee Attack
+
+### Goal
+
+Connect one configured attack from player input through animation-authored hit timing, swept collision detection, per-attack duplicate prevention, and the existing structured health/damage contract.
+
+### Result
+
+Implemented `FMeleeAttackModel` with authoritative `Ready -> WindUp -> Active -> Recovery -> Ready` transitions, request rejection, interruption, and permission queries. `FMeleeAttackData` holds editable montage, play rate, damage amount/type, trace radius, and socket names with harmless default damage and basic configuration validation.
+
+Attached `UMeleeAttackComponent` to the player and bound the melee Enhanced Input action using `Started`. Attack requests validate the owner, living health component, mesh, sockets, animation instance, and configuration before starting the model and montage. Playback failure resets the model; montage-end handling completes recovery or performs fallback cleanup. A custom Notify State requests the active window's begin/end transitions.
+
+Added active-only sphere sweeps at the weapon tip, base, and midpoint using previous/current socket positions. The queries ignore the attacker and currently use `ECC_Visibility`. History initializes at the accepted window opening and is invalidated on window close, sampling failure, or montage cleanup. Toggleable socket markers and a connecting line remain independent of collision detection.
+
+Centralized sample sweeping/logging and debug drawing in helpers, made position history private, and delegated hit permission to the model. A private `ActorsHit` collection is shared across samples and ticks and resets after an accepted new attack request. Eligible targets are living actors with `UHealthComponent`, without a practice-dummy-specific cast. Targets are recorded before calling damage. Each context carries configured damage/type, the attacker as instigator and source, and the sweep impact point.
+
+### Verification
+
+- Martin previously reported a successful Unreal build and passing Phase 3 checks/tests. Captured transition logs showed accepted `Ready -> WindUp -> Active -> Recovery -> Ready`, hits permitted only in `Active`, and normal `TryEndRecovery` cleanup.
+- During this session, Martin reported working active-window debug markers, collision detection of `BP_PracticeDummy`, and duplicate-suppression behavior. Tip-first logs are expected from sample order and do not independently verify base/midpoint-only coverage.
+- After fixing the inverted health-validity guard, Martin reported that melee hits reduce dummy health, display damage taken, and trigger the existing death announcement. These are user-reported Play-mode observations, not an independently executed integration test run.
+- Assistant checks: source/diff reviews; earlier position-tracking work passed eight mocked tick scenarios. No Unreal toolchain was available on this host, and the final melee/health regression suites have not been rerun here.
+- Evidence: `bc94bfa` (transition diagnostics), `ce78177` (safe position history/debug toggle), `b9ccbb1` (three-point tracing), `bfa068c` (refactor), `84f8be1` (deduplication), `49a8cc5` (damage context), and `bf94018` (health-guard correction).
+
+### Obstacles and decisions
+
+- Missing Blueprint melee defaults were resolved after closing Unreal and rebuilding the Editor target. Montage input was initially blocked by the unassigned melee action in player Class Defaults.
+- Corrected shadowed socket variables, a tip/base endpoint mix-up, and an empty sweep `if`. Sweep results are processed regardless of the Boolean blocking-hit return so overlap results are not discarded.
+- Invalid/dead receivers use `continue`, not `return`, so one ineligible result does not abort processing the remaining results. The health guard rejects invalid components before dereferencing them.
+- Martin chose to wrap Day 6 at the core-melee milestone and prioritize fundamentals. Sound, camera shake, hit-stop, and additional audiovisual feedback are deferred unless needed later; the existing damage display and death events remain in use. This supersedes the original plan's immediate presentation requirement.
+- Interruption/blend-out hardening and its final active-window verification were separately deferred earlier. Existing montage-end fallback is implemented, but that is not proof of immediate hit shutdown during interrupted blend-out.
+
+### Backlog and remaining verification
+
+- Rerun `AshenStep.MeleeAttack.Model`, `AshenStep.MeleeAttack.Configuration`, `AshenStep.MeleeAttack.Phase3.Component`, and `AshenStep.Health` in Unreal against the final branch. Add executable deduplication and damage-context integration coverage; the acceptance specification is not itself an executable test.
+- Confirm exactly one damage event per target per attack, a second attack hitting the same target again, two targets each hit once, misses, scenery, dead targets, lethal overkill, and no repeated death announcements. Verify damage with debug drawing disabled and inspect the context event payloads.
+- Independently test base/midpoint coverage and tracing at varied frame rates. Three samples and straight inter-frame sweeps are the current approximation, not proven complete coverage for every weapon length or fast rotation. Revisit a dedicated combat collision channel and blocker behavior.
+- Finish interruption/owner-death cleanup, immediate hit-window shutdown, and clearing swing-scoped hit tracking during cleanup (currently reset on the next accepted attack). Confirm movement/dash interactions and no stale callbacks affecting later attacks.
+- Use the returned applied-damage amount for success diagnostics and any future feedback. It is currently captured but unused; the melee log still reports detection, not confirmed applied damage.
+
+### Next action
+
+Wrap this core-melee session with the working input-to-damage loop documented. Keep optional presentation work deferred. Before treating the original full Day 6 acceptance checklist as complete or merging the feature, run the remaining core regression checks and address the recorded cleanup gaps. No merge is performed by this documentation update.
